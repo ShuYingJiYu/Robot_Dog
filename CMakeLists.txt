@@ -22,13 +22,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 # log opencv dir
 message(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
 
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(tracker main.cpp
-        udputil.hpp
-        colorgroup.hpp
-        lcmutil.hpp
-        robot_control_lcmt.hpp
+add_executable(tracker src/main.cpp
 )
 
 target_link_libraries(tracker
@@ -40,8 +36,15 @@ target_link_libraries(tracker
         ${OpenCV_LIBS}
 )
 
-add_executable(test test.cpp)
+add_executable(test src/test.cpp)
 
 target_link_libraries(test
+        ${OpenCV_LIBS}
+)
+
+add_executable(list src/list.cpp
+        include/dog.hpp)
+
+target_link_libraries(list
         ${OpenCV_LIBS}
 )

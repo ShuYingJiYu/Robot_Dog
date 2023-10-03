@@ -1,27 +1,15 @@
 #include <iostream>
 #include <lcm/lcm-cpp.hpp>
+
 #include "robot_control_lcmt.hpp"
 
 using namespace std;
 
 lcm::LCM lcm_socket("udpm://239.255.76.67:7667?ttl=1");
 
-struct DogPose {
-    int gesture_type = 3; // motion type, where 3 is run, 4 is stopped
-    int control_mode = 0;
-    float step_height = 0.04;     // default to 0.04
-    float stand_height = 0.3;     // default to 0.3
-    float v_des[3] = {0.0, 0, 0}; // speed x y z axes0.2, 0, 0
-    float rpy_des[3] = {0, 0, 0}; // 俯仰
-};
-
 class lcmUtil {
 public:
     lcmUtil();
-
-//    void send(const float v_des[3], int gait_type, float step_height, float stand_height, const float rpy_des[]);
-
-//    void send(int control_mode);
 
     robot_control_lcmt ctl{};
 
