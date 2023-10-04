@@ -15,13 +15,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-SOURCES += src/main.cpp include/colorgroup.cpp
-HEADERS += include/colorgroup.hpp\
-include/dog.hpp\
-include/lcmutil.hpp\
-include/robot_control_lcmt.hpp\
-include/udputil.hpp\
-include/colorgroup.h
+SOURCES += src/main.cpp
+HEADERS += include/dog.h include/stage.hpp include/util/color.hpp include/util/lcm.hpp include/util/udp.hpp
 
 #导入lcm 的库
 INCLUDEPATH += ./include
