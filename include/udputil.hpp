@@ -17,7 +17,7 @@ public:
 
     int ifReceiveInfoFlag = 0;
     int color = 0;
-    QByteArray colorThreadhold;
+    QByteArray colorThreshold;
 
 private:
     void run() override;
@@ -39,29 +39,34 @@ void UdpUtil::run() {
     memset(&addr_serv, 0, sizeof(struct sockaddr_in)); // 每个字节都用0填充
     addr_serv.sin_family = AF_INET;                    // 使用IPV4地址
     addr_serv.sin_port = htons(SERV_PORT);             // 端口
+
+
     /* INADDR_ANY表示不管是哪个网卡接收到数据，只要目的端口是SERV_PORT，就会被该应用程序接收到 */
     addr_serv.sin_addr.s_addr = htonl(INADDR_ANY); // 自动获取IP地址
     len = sizeof(addr_serv);
+
     /* 绑定socket */
     if (bind(sock_fd, (struct sockaddr *) &addr_serv, sizeof(addr_serv)) < 0) {
         perror("bind error:");
         exit(1);
     }
-    int recv_num;
+    long recv_num;
     char recv_buf[20];
     struct sockaddr_in addr_client
             {
             };
     while (true) {
-        // printf("server wait:\n");
         recv_num = recvfrom(sock_fd, recv_buf, sizeof(recv_buf), 0, (struct sockaddr *) &addr_client,
                             (socklen_t *) &len);
         if (recv_num < 0) {
             perror("recvfrom error:");
-            exit(1);
+            break;
         }
+
+        // printf("server wait:\n");
         // recv_buf[recv_num] = '\0';
         int index = (unsigned char) recv_buf[0];
+
         // std::cout<<index<<std::endl;
         switch (index) {
             case 0:
@@ -71,22 +76,26 @@ void UdpUtil::run() {
             case 1:
                 ifReceiveInfoFlag = 2; // set color threshold
                 for (int i = 0; i <= 5; i++) {
-                    colorThreadhold[i] = recv_buf[i + 1];
+                    colorThreshold[i] = recv_buf[i + 1];
                 }
                 break;
             case 2:
                 ifReceiveInfoFlag = 3; // save color threshold
                 break;
+            default:
+                break;
         }
-        //        for(int i=0;i<2;i++)
-        //        printf("receive %d\n", recv_buf[0]);
-        //          printf("server receive %d bytes: %s\n", recv_num, recv_buf);
+        //        for (int i = 0; i < 2; i++)
+        //            printf("receive %d\n", recv_buf[0]);
+        //        printf("server receive %d bytes: %s\n", recv_num, recv_buf);
         //
-        //          send_num = sendto(sock_fd, send_buf, recv_num, 0, (struct sockaddr *)&addr_client, len);
-        //        if(send_num < 0){
+        //        send_num = sendto(sock_fd, send_buf, recv_num, 0, (struct sockaddr *) &addr_client, len);
+        //        if (send_num < 0) {
         //            perror("sendto error:");
         //            exit(1);
         //        }
+
     }
     close(sock_fd);
+    exit(1);
 }

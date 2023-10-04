@@ -5,16 +5,16 @@
 using namespace std;
 using namespace cv;
 
-const int MAX = 100;
+// const int MAX = 100;
 
 int main() {
     Mat frame;
     VideoCapture cap(0);
-    while (true) {
-        cap >> frame;
-        imshow("frame", frame);
-        // sleep 1 second
-//        sleep(1);
-    }
-    return 0;
+//    while (true) {
+//        cap >> frame;
+//        imshow("frame", frame);
+//        // sleep 1 second
+//        //        sleep(1);
+//    }
+//    return 0;
 }

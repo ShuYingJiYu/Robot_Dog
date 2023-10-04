@@ -40,82 +40,16 @@ int getCenterLine(Mat &curr_frame, bool draw_line = true) {
     return 200;
 }
 
-bool judgmentLeft(Mat &image, int i, int j) {
-    if ((int) image.at<uchar>(i, j) == 0) {
-        if ((int) image.at<uchar>(i, j + 3) == 255 && (int) image.at<uchar>(i, j + 5) == 255)
-            return true;
-        else
-            return false;
-    } else if ((int) image.at<uchar>(i, j) == 255 && j == 0) {
-        if ((int) image.at<uchar>(i, j + 3) == 255 && (int) image.at<uchar>(i, j + 5) == 255)
-            return true;
-        else
-            return false;
-    } else {
-        return false;
-    }
-}
-
-bool judgmentRight(Mat &image, int i, int j) {
-    if ((int) image.at<uchar>(i, j) == 0) {
-        if ((int) image.at<uchar>(i, j - 3) == 255 && (int) image.at<uchar>(i, j - 5) == 255)
-            return true;
-        else
-            return false;
-    } else if ((int) image.at<uchar>(i, j) == 255 && j == 399) {
-        if ((int) image.at<uchar>(i, j - 3) == 255 && (int) image.at<uchar>(i, j - 5) == 255)
-            return true;
-        else
-            return false;
-    } else {
-        return false;
-    }
-}
-
-int getAverage(Mat &frame, bool is_draw = false) {
-    int average = 200; // 中线均值
-    int sum = 0;
-    for (int i = 0; i < frame.rows; i++) {
-        int l, r;
-        for (l = 1; l < frame.cols - 1; l++) {
-            int c = frame.at<uchar>(i, l) +
-                    frame.at<uchar>(i, l + 1) +
-                    frame.at<uchar>(i, l - 1);
-            if (c == 255 * 3)
-                break;
-        }
-        for (r = frame.cols - 2; r >= 1; r--) {
-            int c = frame.at<uchar>(i, r) +
-                    frame.at<uchar>(i, r + 1) +
-                    frame.at<uchar>(i, r - 1);
-            if (c == 255 * 3)
-                break;
-        }
-
-        int center = (l + r) >> 1;
-        sum += center;
-        if (is_draw)
-            frame.at<uchar>(i, center) = 0;
-    }
-
-    int average_line = sum / frame.rows;
-    if (average_line < 0 || average_line > frame.rows)
-        return frame.rows / 2;
-    else
-        return average_line;
-}
-
-
 int main() {
-    // read image
+    // read raw_frame
     Mat image = imread("./turn1.jpg");
-    // resize image
+    // resize raw_frame
     resize(image, image, Size(400, 300));
     imwrite("./resize.jpg", image);
-    // blur image
+    // blur raw_frame
     Mat blur_image;
     medianBlur(image, blur_image, 5);
-    // binary image
+    // binary raw_frame
     Mat binary_image;
     inRange(blur_image, Scalar(0, 150, 0), Scalar(255, 255, 255), binary_image);
     imwrite("binary.jpg", binary_image);
@@ -124,9 +58,8 @@ int main() {
     Canny(binary_image, canny_image, 50, 150, 3);
     imwrite("canny.jpg", canny_image);
 
-    // copy image
+    // copy raw_frame
     center_image = binary_image.clone();
-    int N = 5;
     for (int i = 0; i < center_image.rows; i++) {
         int l, r;
         for (l = 1; l < center_image.cols - 1; l++) {
@@ -149,12 +82,10 @@ int main() {
     }
     imwrite("center.jpg", center_image);
 
-//    vector<cv::Vec4i> lines;
-//    HoughLinesP(canny_image, lines, 1, CV_PI / 180, 100, 20, 1000);
-//    for (auto &line: lines) {
-//        cv::line(center_image, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(120, 255, 255), 1);
-//    }
-//    imwrite("center.jpg", center_image);
-
+    //    vector<cv::Vec4i> lines;
+    //    HoughLinesP(canny_image, lines, 1, CV_PI / 180, 100, 20, 1000);
+    //    for (auto &line: lines) {
+    //        cv::line(center_image, cv::Point(line[0], line[1]), cv::Point(line[2], line[3]), cv::Scalar(120, 255, 255), 1);
+    //    }
+    //    imwrite("center.jpg", center_image);
 }
-

@@ -9,8 +9,7 @@
 #ifndef __robot_control_lcmt_hpp__
 #define __robot_control_lcmt_hpp__
 
-class robot_control_lcmt
-{
+class robot_control_lcmt {
 public:
     int32_t control_mode;
 
@@ -74,10 +73,9 @@ public:
     inline static uint64_t _computeHash(const __lcm_hash_ptr *p);
 };
 
-int robot_control_lcmt::encode(void *buf, int offset, int maxlen) const
-{
+int robot_control_lcmt::encode(void *buf, int offset, int maxlen) const {
     int pos = 0, tlen;
-    int64_t hash = (int64_t)getHash();
+    int64_t hash = (int64_t) getHash();
 
     tlen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &hash, 1);
     if (tlen < 0)
@@ -94,8 +92,7 @@ int robot_control_lcmt::encode(void *buf, int offset, int maxlen) const
     return pos;
 }
 
-int robot_control_lcmt::decode(const void *buf, int offset, int maxlen)
-{
+int robot_control_lcmt::decode(const void *buf, int offset, int maxlen) {
     int pos = 0, thislen;
 
     int64_t msg_hash;
@@ -116,24 +113,20 @@ int robot_control_lcmt::decode(const void *buf, int offset, int maxlen)
     return pos;
 }
 
-int robot_control_lcmt::getEncodedSize() const
-{
+int robot_control_lcmt::getEncodedSize() const {
     return 8 + _getEncodedSizeNoHash();
 }
 
-int64_t robot_control_lcmt::getHash()
-{
+int64_t robot_control_lcmt::getHash() {
     static int64_t hash = _computeHash(NULL);
     return hash;
 }
 
-const char *robot_control_lcmt::getTypeName()
-{
+const char *robot_control_lcmt::getTypeName() {
     return "robot_control_lcmt";
 }
 
-int robot_control_lcmt::_encodeNoHash(void *buf, int offset, int maxlen) const
-{
+int robot_control_lcmt::_encodeNoHash(void *buf, int offset, int maxlen) const {
     int pos = 0, tlen;
 
     tlen = __int32_t_encode_array(buf, offset + pos, maxlen - pos, &this->control_mode, 1);
@@ -175,8 +168,7 @@ int robot_control_lcmt::_encodeNoHash(void *buf, int offset, int maxlen) const
     return pos;
 }
 
-int robot_control_lcmt::_decodeNoHash(const void *buf, int offset, int maxlen)
-{
+int robot_control_lcmt::_decodeNoHash(const void *buf, int offset, int maxlen) {
     int pos = 0, tlen;
 
     tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &this->control_mode, 1);
@@ -218,8 +210,7 @@ int robot_control_lcmt::_decodeNoHash(const void *buf, int offset, int maxlen)
     return pos;
 }
 
-int robot_control_lcmt::_getEncodedSizeNoHash() const
-{
+int robot_control_lcmt::_getEncodedSizeNoHash() const {
     int enc_size = 0;
     enc_size += __int32_t_encoded_array_size(NULL, 1);
     enc_size += __int32_t_encoded_array_size(NULL, 1);
@@ -230,8 +221,7 @@ int robot_control_lcmt::_getEncodedSizeNoHash() const
     return enc_size;
 }
 
-uint64_t robot_control_lcmt::_computeHash(const __lcm_hash_ptr *)
-{
+uint64_t robot_control_lcmt::_computeHash(const __lcm_hash_ptr *) {
     uint64_t hash = 0x671c114e041cf053LL;
     return (hash << 1) + ((hash >> 63) & 1);
 }

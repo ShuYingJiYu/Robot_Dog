@@ -42,8 +42,7 @@ target_link_libraries(test
         ${OpenCV_LIBS}
 )
 
-add_executable(list src/list.cpp
-        include/dog.hpp)
+add_executable(list src/list.cpp)
 
 target_link_libraries(list
         ${OpenCV_LIBS}

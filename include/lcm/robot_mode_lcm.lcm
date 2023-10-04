@@ -1,0 +1,9 @@
+struct robot_mode
+{
+    int32_t control_mode;
+    int32_t gait_type;
+    float v_des[3];
+    float step_height_lcm;
+    float stand_height_lcm;
+    float rpy_des[3];
+}
