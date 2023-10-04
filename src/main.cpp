@@ -1,113 +1,65 @@
-#define DEBUG true
+//
+// Created by sakurapuare on 23-10-5.
+//
 
+#include <thread>
 #include <chrono>
 
-#include "dog.hpp"
-#include "udputil.hpp"
-#include "colorgroup.hpp"
-#include "lcmutil.hpp"
+#include "dog.h"
+#include "stage.hpp"
+#include "util/color.hpp"
+#include "util/udp.hpp"
+#include "util/lcm.hpp"
 
-#include <QCoreApplication>
-#include <QThread>
 #include <opencv4/opencv2/opencv.hpp>
 
-using namespace std;
+
 using namespace cv;
+using namespace std;
 
-class TimerThread : public QThread {
-public:
-    int curr_mode = STOP;
-    int next_color = blue;
-    int stage = 0;
-    int laps = 1;
-
-    chrono::time_point<chrono::steady_clock> start_time;
-
-    void start_thread() {
-        start_time = chrono::steady_clock::now();
-        QThread::start();
-    }
-
-    void stop_thread() {
-        requestInterruption();
-        QThread::wait();
-    }
-
-    void run() override {
-        // while thread is running
-        while (!isInterruptionRequested()) {
-            switch (curr_mode) {
-                case LIMIT: {
-                    QThread::sleep(1);
-                    stage++;
-                    QThread::sleep(6);
-                    stage++;
-                    QThread::msleep(10);
-                    curr_mode = TRACK;
-                    stage = 0;
-                    break;
-                }
-                case RESIDENT: {
-                    QThread::sleep(5);
-                    stage++;
-                    QThread::sleep(5);
-                    stage++;
-                    QThread::sleep(10);
-                    stage++;
-                    QThread::sleep(5);
-                    stage++;
-                    QThread::sleep(15);
-                    stage++;
-                    QThread::sleep(10);
-                    stage++;
-                    QThread::msleep(10);
-                    curr_mode = TRACK;
-                    stage = 0;
-                    break;
-                }
-                case CROSS: {
-                    QThread::sleep(1);
-                    stage++;
-                    QThread::msleep(10);
-                    curr_mode = TRACK;
-                    stage = 0;
-                    break;
-                }
-                case STAIR: {
-                    QThread::sleep(7);
-                    stage++;
-                    QThread::msleep(10);
-                    curr_mode = TRACK;
-                    stage = 0;
-                    break;
-                }
-            }
-            QThread::msleep(100);
-        }
-
-        cout << "Running Time: "
-             << chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start_time).count()
-             << "s" << endl;
-    };
-};
-
-void debug();
-
-const static int TICK = 50;
-
+// 全局摄像头
 VideoCapture cap;
-UdpUtil udp;
-ColorSet color;
-DogPose dogPose;
+// 全局图像
+Mat raw_frame, binary_frame, processed_frame;
+// 实例化色彩阈值类
+ColorThread color;
+// 实例化udp类
+UdpThread udp;
+// 狗的全局姿态
+DogPose pose;
+// 实例化lcm类
+LCMUtil *pLcmUtil = new LCMUtil();
+// 实例化定时器线程
 TimerThread timer;
-static Mat kernel = getStructuringElement(MORPH_RECT, Size(3, 3));
+// 全局运行次数
+static int running_count = 0;
+// 全局核
+static Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
 
-bool checkColorBarExist(Mat &curr_frame, int c, bool draw_line = DEBUG) {
+void debug() {
+    if (running_count % 20 == 0)
+        cout << "\n  =====  running: " << running_count << "  =====  " << endl
+             << timer.DebugString() << endl
+             << pose.DebugString() << endl;
+    running_count++;
+}
+
+void PreProcessFrame(Mat &before, Mat &after, int c) {
+    // min, max
+    Scalar min = color.get_min(c);
+    Scalar max = color.get_max(c);
+
+    inRange(before, min, max, after);
+    // morphology
+    morphologyEx(after, after, MORPH_OPEN, kernel);
+    morphologyEx(after, after, MORPH_CLOSE, kernel);
+}
+
+
+bool checkColorBarExist(Mat &curr_frame, int c, bool draw_line = true) {
     Mat color_frame, canny_frame;
+    PreProcessFrame(curr_frame, color_frame, c);
     vector<cv::Vec2f> lines;
-    inRange(curr_frame, color.get_min(c), color.get_max(c), color_frame);
-    erode(color_frame, color_frame, kernel, Point(-1, -1), 2);
-    dilate(color_frame, color_frame, kernel, Point(-1, -1), 5);
     Canny(color_frame, canny_frame, 50, 150, 3);
     HoughLines(canny_frame, lines, 1, CV_PI / 180, 100);
 
@@ -133,7 +85,8 @@ bool checkColorBarExist(Mat &curr_frame, int c, bool draw_line = DEBUG) {
     return horizontal_lines > 2;
 }
 
-int getCenterLine(Mat &curr_frame, bool draw_line = DEBUG) {
+
+int getCenterLine(Mat &curr_frame, bool draw_line = true) {
     int sum = 0;
     for (int i = 0; i < curr_frame.rows; i++) {
         int l, r;
@@ -165,41 +118,37 @@ int getCenterLine(Mat &curr_frame, bool draw_line = DEBUG) {
         return average_line;
 }
 
-void ProcessFrame(Mat &frame) {
-    Mat resized_frame, blur_frame;
-    resize(frame, resized_frame, Size(400, 300));
-    medianBlur(resized_frame, blur_frame, 5);
 
-    Mat white_frame;
-    inRange(blur_frame, color.get_min(white), color.get_max(white), white_frame);
-    erode(white_frame, white_frame, kernel, Point(-1, -1), 2);
-    dilate(white_frame, white_frame, kernel, Point(-1, -1), 5);
+void ProcessFrame() {
 
+    // white binary frame
+    PreProcessFrame(raw_frame, binary_frame, white);
     static float goal_average = 200;                       // 目标中线均值
-    auto curr_average = (float) getCenterLine(white_frame); // 当前中线均值
+    auto curr_average = (float) getCenterLine(binary_frame); // 当前中线均值
+
 
     // 颜色变换
-    if (timer.stage == 0 && timer.curr_mode != STOP) {
-        if (timer.next_color == blue && checkColorBarExist(blur_frame, blue)) {
-            timer.curr_mode = LIMIT;
+    if (timer.stage == 0 && timer.task != TASK_STOP) {
+        if (timer.next_color == blue && checkColorBarExist(raw_frame, blue)) {
+            timer.task = TASK_LIMIT;
             if (timer.laps == 1)
                 timer.next_color = violet;
             else
                 timer.next_color = green;
-        } else if (timer.next_color == violet && checkColorBarExist(blur_frame, violet)) {
-            timer.curr_mode = RESIDENT;
+        } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
+            timer.task = TASK_RESIDENT;
             timer.next_color = green;
-        } else if (timer.next_color == green && checkColorBarExist(blur_frame, green)) {
-            timer.curr_mode = CROSS;
+        } else if (timer.next_color == green && checkColorBarExist(raw_frame, green)) {
+            timer.task = TASK_CROSS;
             if (timer.laps == 1)
                 timer.next_color = yellow;
             else
                 timer.next_color = red;
-        } else if (timer.next_color == red && checkColorBarExist(blur_frame, red)) {
-            timer.curr_mode = RESIDENT;
+        } else if (timer.next_color == red && checkColorBarExist(raw_frame, red)) {
+            timer.task = TASK_RESIDENT;
             timer.next_color = yellow;
-        } else if (timer.next_color == yellow && checkColorBarExist(blur_frame, yellow)) {
-            timer.curr_mode = CROSS;
+        } else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
+            timer.task = TASK_CROSS;
             timer.next_color = red;
             timer.laps++;
         }
@@ -207,225 +156,212 @@ void ProcessFrame(Mat &frame) {
     }
 
     // 动作变换
-    if (timer.curr_mode == STOP) {
-        dogPose.gesture_type = 6;
-        dogPose.v_des[0] = dogPose.v_des[1] = dogPose.v_des[2];
-        //        dogPose.rpy_des[0] = dogPose.rpy_des[1] = dogPose.rpy_des[2] = 0;
-        dogPose.step_height = 0.04;
-        dogPose.stand_height = 0.3;
-    } else if (timer.curr_mode == TRACK) {
+    if (timer.task == TASK_STOP) {
+        pose.gesture_type = 6;
+        pose.v_des[0] = pose.v_des[1] = pose.v_des[2];
+        pose.step_height = 0.04;
+        pose.stand_height = 0.3;
+    } else if (timer.task == TASK_TRACK) {
         goal_average = 200;
-        dogPose.gesture_type = 3;
-        dogPose.step_height = 0.03;
-        dogPose.stand_height = 0.3;
-        dogPose.v_des[0] = 0.2;
-        dogPose.v_des[1] = 0.001f * (goal_average - curr_average);
-        dogPose.v_des[2] = 0.008f * (goal_average - curr_average);
-        dogPose.rpy_des[0] = dogPose.rpy_des[1] = dogPose.rpy_des[2] = 0;
-    } else if (timer.curr_mode == LIMIT) {
+        pose.gesture_type = 3;
+        pose.step_height = 0.03;
+        pose.stand_height = 0.3;
+        pose.v_des[0] = 0.2;
+        pose.v_des[1] = 0.001f * (goal_average - curr_average);
+        pose.v_des[2] = 0.008f * (goal_average - curr_average);
+        pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+    } else if (timer.task == TASK_LIMIT) {
         goal_average = 200;
-        dogPose.gesture_type = 3;
-        dogPose.step_height = 0.01;
-        dogPose.rpy_des[0] = dogPose.rpy_des[1] = dogPose.rpy_des[2] = 0;
-        dogPose.v_des[0] = 0.2;
-        dogPose.v_des[1] = 0.001f * (goal_average - curr_average);
-        dogPose.v_des[2] = 0.006f * (goal_average - curr_average);
+        pose.gesture_type = 3;
+        pose.step_height = 0.01;
+        pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        pose.v_des[0] = 0.2;
+        pose.v_des[1] = 0.001f * (goal_average - curr_average);
+        pose.v_des[2] = 0.006f * (goal_average - curr_average);
 
         if (timer.stage == 1)
-            dogPose.stand_height = 0.2;
+            pose.stand_height = 0.2;
         else if (timer.stage == 2)
-            dogPose.stand_height = 0.15;
+            pose.stand_height = 0.15;
         else if (timer.stage == 3) {
-            dogPose.stand_height = 0.3;
+            pose.stand_height = 0.3;
         }
-    } else if (timer.curr_mode == RESIDENT) {
+    } else if (timer.task == TASK_RESIDENT) {
         switch (timer.stage) {
-            case 1:
-                dogPose.stand_height = 0.3;
-                dogPose.v_des[0] = 0.03;
+            case 1: // prepare
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.03;
                 break;
-            case 2:
-                dogPose.stand_height = 0.3;
-                dogPose.v_des[0] = 0.0;
-                dogPose.gesture_type = 6;
-                dogPose.rpy_des[0] = 0.3;
-                dogPose.control_mode = 3;
+            case 2: // dump
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.0;
+                pose.gesture_type = 6;
+                pose.rpy_des[0] = 0.3;
+                pose.control_mode = 3;
                 break;
-            case 3:
-                dogPose.gesture_type = 6;
-                dogPose.step_height = 0.00;
-                dogPose.stand_height = 0.3;
-                dogPose.rpy_des[0] = 0;
-                dogPose.rpy_des[1] = 0;
-                dogPose.rpy_des[2] = 0;
-                dogPose.v_des[0] = 0.0;
-                dogPose.control_mode = 12;
+            case 3: // ?
+                pose.gesture_type = 6;
+                pose.step_height = 0.00;
+                pose.stand_height = 0.3;
+                pose.rpy_des[0] = 0;
+                pose.rpy_des[1] = 0;
+                pose.rpy_des[2] = 0;
+                pose.v_des[0] = 0.0;
+                pose.control_mode = MODE_STABLE;
                 break;
             case 4:
-                dogPose.control_mode = 3;
+                pose.control_mode = 3;
                 break;
             case 5:
-                dogPose.control_mode = 15;
+                pose.control_mode = 15;
                 break;
             case 6:
-                dogPose.control_mode = 12;
+                pose.control_mode = MODE_STABLE;
                 break;
             case 7:
-                dogPose.control_mode = 11;
+                pose.control_mode = MODE_WALK;
                 break;
         }
-    } else if (timer.curr_mode == CROSS) {
+    } else if (timer.task == TASK_CROSS) {
         if (timer.stage == 1) {
+            goal_average = 200;
+            pose.gesture_type = 3;
+            pose.step_height = 0.03;
+            pose.stand_height = 0.3;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            pose.v_des[0] = 0.2;//前进
+            pose.v_des[1] = 0.001f * (curr_average - goal_average);//横移
+            pose.v_des[2] = 0.008f * (goal_average - curr_average);//转向
+        } else {
             if (timer.laps == 1) {
+                // left
                 goal_average = 180;
-                dogPose.gesture_type = 3;
-                dogPose.step_height = 0.04;
-                dogPose.stand_height = 0.3;
-                dogPose.rpy_des[0] = 0;
-                dogPose.rpy_des[1] = 0;
-                dogPose.rpy_des[2] = 0;
-                dogPose.v_des[0] = 0.2;
-                dogPose.v_des[2] = -0.2;
+                pose.gesture_type = 3;
+                pose.step_height = 0.04;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.2;
+                pose.v_des[2] = -0.2;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             } else {
+                // right
                 goal_average = 180;
-                dogPose.gesture_type = 3;
-                dogPose.step_height = 0.03;
-                dogPose.stand_height = 0.3;
-                dogPose.rpy_des[0] = 0;
-                dogPose.rpy_des[1] = 0;
-                dogPose.rpy_des[2] = 0;
-                dogPose.v_des[0] = 0.2;
-                dogPose.v_des[2] = 0.2;
+                pose.gesture_type = 3;
+                pose.step_height = 0.03;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.2;
+                pose.v_des[2] = 0.2;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             }
         }
-    } else if (timer.curr_mode == STAIR) {
+
+    } else if (timer.task == TASK_UPSTAIR) {
         goal_average = 180;
-        dogPose.gesture_type = 3;
-        dogPose.step_height = 0.1;
-        dogPose.stand_height = 0.3;
-        dogPose.rpy_des[0] = dogPose.rpy_des[1] = dogPose.rpy_des[2] = 0;
-        dogPose.v_des[0] = 0.3;
-        dogPose.v_des[1] = 0.005f * (goal_average - curr_average);
+        pose.gesture_type = 3;
+        pose.step_height = 0.1;
+        pose.stand_height = 0.3;
+        pose.v_des[0] = 0.3;
+        pose.v_des[1] = 0.005f * (goal_average - curr_average);
+        pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     }
 }
 
 int main(int argc, char *argv[]) {
-#ifndef DEBUG
-    freopen("/dev/null", "w", stdout);
-#endif
-
+    // 显示图像 default: false
     bool showImage = false;
 
     // parse arguments
-    if (argc >= 2) {
+    if (argc > 1) {
         for (int i = 1; i < argc; i++) {
-            if (argv[i] == string("stop"))
-                timer.curr_mode = STOP, cout << "stop" << endl;
-            if (argv[i] == string("track"))
-                timer.curr_mode = TRACK, cout << "track" << endl;
+            if (argv[i] == string("showImage")) cout << "showImage" << endl, showImage = true, udp.start();
 
-            if (argv[i] == string("showImage"))
-                showImage = true, cout << "showImage" << endl;
+            // mode
+            if (argv[i] == string("stop")) cout << "stop" << endl, timer.task = TASK_STOP;
+            if (argv[i] == string("track")) cout << "track" << endl, timer.task = TASK_TRACK;
         }
     }
 
     // open camera
-    int camera_id;
-    for (camera_id = 0; camera_id <= 3; camera_id++) {
-        cap.open(camera_id);
-        if (cap.isOpened())
-            break;
-    }
-    if (!cap.isOpened())
-        return -1;
-    cout << "opened camera: " << camera_id << endl;
+    static int camera_id = 0;
+    while (!cap.isOpened() && camera_id < 10)
+        cap.open(camera_id), cout << "camera_id: " << camera_id << endl, camera_id++;
+    if (!cap.isOpened()) return -1;
 
-    auto *pLcmUtil = new lcmUtil;
+    // init dog pose and gesture
+    cout << "init dog pose and gesture" << endl;
+    pose.control_mode = MODE_STABLE;
+    pLcmUtil->send(pose);
+    this_thread::sleep_for(chrono::seconds(5));
+    pose.control_mode = MODE_WALK;
+    pLcmUtil->send(pose);
 
-    // start to balance
-    cout << "start to balance" << endl;
-    dogPose.control_mode = STAND;
-    pLcmUtil->send(dogPose, true);
-    QThread::sleep(5);
-    dogPose.control_mode = WALK;
-    pLcmUtil->send(dogPose, true);
-    //    QThread::sleep(5);
 
-    // start main
+    // main thread
     timer.start_thread();
-    Mat frame, resized_frame, blur_frame;
-    while (timer.laps <= 3) {
-        // reopen camera
-        if (cap.get(CAP_PROP_HUE) == -1) {
-            cerr << "camera " << camera_id << " is not opened" << endl;
-            while (!cap.isOpened()) {
-                cap.open(camera_id);
-                QThread::msleep(100);
+    while (true) {
+        // reboot camera
+        if (cap.get(CAP_PROP_FRAME_WIDTH) <= 0) {
+            cap.release();
+            // for 1 - 10 camera
+            // each camera try 3 times
+            for (int i = 0; i < 10; i++) {
+                cout << "camera open failed, retrying..." << endl;
+                cap.open(camera_id++);
+                if (cap.get(CAP_PROP_FRAME_WIDTH) > 0) break;
+            }
+
+            // if still failed, exit
+            if (cap.get(CAP_PROP_FRAME_WIDTH) <= 0) {
+                cout << "camera open failed" << endl;
+                return -1;
             }
         }
 
-        cap >> frame;
-        // if not empty
-        if (!frame.empty()) {
-            // preprocess frame
-            resize(frame, resized_frame, Size(400, 300));
-            //            medianBlur(resized_frame, blur_frame, 5);
-            GaussianBlur(resized_frame, blur_frame, cv::Size(5, 5), 0);
-            ProcessFrame(blur_frame);
-            pLcmUtil->send(dogPose, true);
-        }
+        cap >> raw_frame; // read raw_frame
+        if (raw_frame.empty()) continue; // skip empty raw_frame
 
-        // show or send picture
+        resize(raw_frame, raw_frame, Size(640, 480), 0, 0, INTER_LINEAR);
+        GaussianBlur(raw_frame, raw_frame, Size(5, 5), 0, 0);
+
+        ProcessFrame();
+        pLcmUtil->send(pose);
+
+        // show image
         if (showImage) {
-            color.setRawImage(blur_frame);
-            color.setBinaryImage(blur_frame);
+            processed_frame = raw_frame.clone();
+            PreProcessFrame(processed_frame, processed_frame, color.get_color());
+            color.showRawImage(raw_frame);
+            color.showBinaryImage(processed_frame);
+            color.start();
 
-            color.start(); // thread1
-            switch (udp.ifReceiveInfoFlag) {
-                case 0:
-                    break;
-                case 1: // choose color and return this color threshold
-                    // cout << "choose color and return this color threshold" << endl;
-                    color.setColor(udp.color);
-                    color.sendColorThreshold();
-                    color.ifRunContinueFlag = true;
-                    break;
-                case 2: // set color threshold
-                    // cout << "set color threshold" << endl;
-                    color.setColorThreshold(udp.colorThreshold);
-                    break;
-                case 3: // save color threshold
-                    // cout << "save color threshold" << endl;
-                    color.save();
-                    break;
-            }
-            udp.ifReceiveInfoFlag = 0;
+            if (udp.receive != 0)
+                switch (udp.receive) {
+                    case 1:
+                        // choose color and return this color threshold
+                        std::cout << "choose color and return this color threshold" << std::endl;
+                        color.setColor(udp.color);
+                        color.sendThreshold();
+                        color.run_continue_flag = true;
+                        break;
+                    case 2:
+                        // set color threshold
+                        std::cout << "set color threshold" << std::endl;
+                        color.setThreshold(udp.color_threshold);
+                        break;
+                    case 3:
+                        // save color threshold
+                        std::cout << "save color threshold" << std::endl;
+                        color.save();
+                        break;
+                }
+            udp.receive = 0;
         }
-        QThread::msleep((unsigned long) (1000 / TICK));
 
-        // debug
         debug();
+
+        // sleep 20ms
+        this_thread::sleep_for(chrono::milliseconds(20));
     }
     timer.stop_thread();
+    cap.release();
     return 0;
-}
-
-void debug() {
-    static int debug_count = 0;
-    if (debug_count % 20 == 0)
-        cout << " timer stage" << timer.stage << endl
-             << " \tmode" << timer.curr_mode << endl
-             << " \tcolor" << timer.next_color << endl
-             << " pose mode" << dogPose.control_mode << endl
-             << " \ttype" << dogPose.gesture_type << endl
-             << " \tstep height" << dogPose.step_height << endl
-             << " \tstand height" << dogPose.stand_height << endl
-             << " \tv_des" << dogPose.v_des[0]
-             << " " << dogPose.v_des[1]
-             << " " << dogPose.v_des[2] << endl
-             << " \trpy_des" << dogPose.rpy_des[0]
-             << " " << dogPose.rpy_des[1]
-             << " " << dogPose.rpy_des[2]
-             << endl;
-    debug_count++;
 }
