@@ -17,14 +17,14 @@ find_package(Qt5 COMPONENTS
 find_package(OpenCV REQUIRED)
 find_package(lcm REQUIRED)
 
-include_directories(${OpenCV_INCLUDE_DIRS})
+# glob all the source files
+file(GLOB_RECURSE SRC_FILES src/*.cpp)
 
-# log opencv dir
-message(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(tracker src/main.cpp
+add_executable(tracker ${SRC_FILES}
 )
 
 target_link_libraries(tracker
@@ -33,17 +33,5 @@ target_link_libraries(tracker
         Qt5::Widgets
         Qt5::Gui
         lcm
-        ${OpenCV_LIBS}
-)
-
-add_executable(test src/test.cpp)
-
-target_link_libraries(test
-        ${OpenCV_LIBS}
-)
-
-add_executable(list src/list.cpp)
-
-target_link_libraries(list
         ${OpenCV_LIBS}
 )

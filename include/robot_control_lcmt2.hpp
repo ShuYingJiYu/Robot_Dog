@@ -14,15 +14,13 @@ class robot_control_lcmt {
 public:
     int32_t control_mode;
 
-    int32_t gait_type;//运动是3，停止是4
+    int32_t gait_type;
 
-    float v_des[3];//
+    float v_des[3];
 
-    float step_height_lcm;//
+    float step_height;
 
-    float stand_height_lcm;//
-
-    float rpy_des[3];//
+    float rpy_des[3];
 
 public:
     /**
@@ -126,10 +124,7 @@ int robot_control_lcmt::_encodeNoHash(void *buf, int offset, int maxlen) const {
     tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->v_des[0], 3);
     if (tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->step_height_lcm, 1);
-    if (tlen < 0) return tlen; else pos += tlen;
-
-    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->stand_height_lcm, 1);
+    tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->step_height, 1);
     if (tlen < 0) return tlen; else pos += tlen;
 
     tlen = __float_encode_array(buf, offset + pos, maxlen - pos, &this->rpy_des[0], 3);
@@ -150,10 +145,7 @@ int robot_control_lcmt::_decodeNoHash(const void *buf, int offset, int maxlen) {
     tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->v_des[0], 3);
     if (tlen < 0) return tlen; else pos += tlen;
 
-    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->step_height_lcm, 1);
-    if (tlen < 0) return tlen; else pos += tlen;
-
-    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->stand_height_lcm, 1);
+    tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->step_height, 1);
     if (tlen < 0) return tlen; else pos += tlen;
 
     tlen = __float_decode_array(buf, offset + pos, maxlen - pos, &this->rpy_des[0], 3);
@@ -168,13 +160,12 @@ int robot_control_lcmt::_getEncodedSizeNoHash() const {
     enc_size += __int32_t_encoded_array_size(NULL, 1);
     enc_size += __float_encoded_array_size(NULL, 3);
     enc_size += __float_encoded_array_size(NULL, 1);
-    enc_size += __float_encoded_array_size(NULL, 1);
     enc_size += __float_encoded_array_size(NULL, 3);
     return enc_size;
 }
 
 uint64_t robot_control_lcmt::_computeHash(const __lcm_hash_ptr *) {
-    uint64_t hash = 0x671c114e041cf053LL;
+    uint64_t hash = 0x1bf19df40f7f6501LL;
     return (hash << 1) + ((hash >> 63) & 1);
 }
 
