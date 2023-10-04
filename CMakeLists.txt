@@ -23,6 +23,7 @@ file(GLOB_RECURSE SRC_FILES src/*.cpp)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/**)
 
 add_executable(tracker ${SRC_FILES}
 )
