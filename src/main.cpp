@@ -34,7 +34,7 @@ TimerThread timer;
 // 全局运行次数
 static int running_count = 0;
 // 全局核
-static Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
+static Mat kernel = getStructuringElement(MORPH_RECT, Size(2, 2));
 
 void debug() {
     if (running_count % 20 == 0)
@@ -50,9 +50,11 @@ void PreProcessFrame(Mat &before, Mat &after, int c) {
     Scalar max = color.get_max(c);
 
     inRange(before, min, max, after);
+    erode(after, after, kernel, Point(-1, -1), 2);
+    dilate(after, after, kernel, Point(-1, -1), 5);
     // morphology
-    morphologyEx(after, after, MORPH_OPEN, kernel);
-    morphologyEx(after, after, MORPH_CLOSE, kernel);
+//    morphologyEx(after, after, MORPH_OPEN, kernel);
+//    morphologyEx(after, after, MORPH_CLOSE, kernel);
 }
 
 
@@ -82,7 +84,12 @@ bool checkColorBarExist(Mat &curr_frame, int c, bool draw_line = true) {
             cv::line(curr_frame, pt1, pt2, Scalar(0, 0, 0), 5, cv::LINE_AA);
         }
     }
-    return horizontal_lines > 2;
+
+    if (horizontal_lines > 1) {
+        cout << "horizontal_lines: " << horizontal_lines << endl;
+        return horizontal_lines > 1;
+    }
+    return false;
 }
 
 
@@ -125,29 +132,34 @@ void ProcessFrame() {
     PreProcessFrame(raw_frame, binary_frame, white);
     static float goal_average = 200;                       // 目标中线均值
     auto curr_average = (float) getCenterLine(binary_frame); // 当前中线均值
-
+//    cout << "curr_average: " << curr_average << endl;
 
     // 颜色变换
     if (timer.stage == 0 && timer.task != TASK_STOP) {
         if (timer.next_color == blue && checkColorBarExist(raw_frame, blue)) {
+            cout << "recognized blue" << endl;
             timer.task = TASK_LIMIT;
             if (timer.laps == 1)
                 timer.next_color = violet;
             else
                 timer.next_color = green;
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
+            cout << "recognized violet" << endl;
             timer.task = TASK_RESIDENT;
             timer.next_color = green;
         } else if (timer.next_color == green && checkColorBarExist(raw_frame, green)) {
+            cout << "recognized green" << endl;
             timer.task = TASK_CROSS;
             if (timer.laps == 1)
                 timer.next_color = yellow;
             else
                 timer.next_color = red;
         } else if (timer.next_color == red && checkColorBarExist(raw_frame, red)) {
+            cout << "recognized red" << endl;
             timer.task = TASK_RESIDENT;
             timer.next_color = yellow;
         } else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
+            cout << "recognized yellow" << endl;
             timer.task = TASK_CROSS;
             timer.next_color = red;
             timer.laps++;
@@ -277,6 +289,9 @@ int main(int argc, char *argv[]) {
             // mode
             if (argv[i] == string("stop")) cout << "stop" << endl, timer.task = TASK_STOP;
             if (argv[i] == string("track")) cout << "track" << endl, timer.task = TASK_TRACK;
+            if (argv[i] == string("limit")) cout << "limit" << endl, timer.task = TASK_LIMIT;
+            if (argv[i] == string("resident")) cout << "resident" << endl, timer.task = TASK_RESIDENT;
+            if (argv[i] == string("upstair")) cout << "up stair" << endl, timer.task = TASK_UPSTAIR;
         }
     }
 
@@ -319,7 +334,7 @@ int main(int argc, char *argv[]) {
         cap >> raw_frame; // read raw_frame
         if (raw_frame.empty()) continue; // skip empty raw_frame
 
-        resize(raw_frame, raw_frame, Size(640, 480), 0, 0, INTER_LINEAR);
+        resize(raw_frame, raw_frame, Size(400, 300), 0, 0, INTER_LINEAR);
         GaussianBlur(raw_frame, raw_frame, Size(5, 5), 0, 0);
 
         ProcessFrame();

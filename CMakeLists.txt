@@ -25,7 +25,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/**)
 
-add_executable(tracker ${SRC_FILES}
+add_executable(tracker src/main.cpp
 )
 
 target_link_libraries(tracker
@@ -34,5 +34,16 @@ target_link_libraries(tracker
         Qt5::Widgets
         Qt5::Gui
         lcm
+        ${OpenCV_LIBS}
+)
+add_executable(test src/test.cpp
+
+)
+target_link_libraries(test
+        Qt5::Core
+        Qt5::Network
+        #        Qt5::Widgets
+        #        Qt5::Gui
+        #        lcm
         ${OpenCV_LIBS}
 )

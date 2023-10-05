@@ -100,12 +100,12 @@ public:
         } else
             cerr << "成功写入" << endl;
 
-        for (auto &c: color_list) {
-            file << index2color[color] << " ";
-            for (int i = 0; i <= 2; i++)
-                file << c.first.val[i] << " ";
-            for (int i = 0; i <= 2; i++)
-                file << c.second.val[i] << " ";
+        for (int i = 0; i < color_list.size(); i++) {
+            file << index2color[i] << " ";
+            for (int j = 0; j < 3; j++)
+                file << color_list[i].first.val[j] << " ";
+            for (int j = 0; j < 3; j++)
+                file << color_list[i].second.val[j] << " ";
             file << endl;
         }
 
@@ -179,6 +179,20 @@ public:
             udp_socket.writeDatagram(message_array, QHostAddress(goalIp), 30016);
         }
         qMutex.unlock();
+    };
+
+    string DebugString() const {
+        string str = "\nColor:\n";
+        str += "\tcolor: " + std::to_string(color) + "\n";
+        for (auto &c: color_list) {
+            str += "\t" + index2color[color] + ": ";
+            for (int i = 0; i <= 2; i++)
+                str += std::to_string(c.first.val[i]) + " ";
+            for (int i = 0; i <= 2; i++)
+                str += std::to_string(c.second.val[i]) + " ";
+            str += "\n";
+        }
+        return str;
     };
 
     bool run_continue_flag = true;
