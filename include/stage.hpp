@@ -35,9 +35,9 @@ public:
             switch (task) {
                 case TASK_LIMIT: {
                     QThread::sleep(1);
-                    stage++;
+                    stage = 2;
                     QThread::sleep(6);
-                    stage++;
+                    stage = 3;
                     QThread::msleep(10);
                     task = TASK_TRACK;
                     stage = 0;
@@ -45,17 +45,17 @@ public:
                 }
                 case TASK_RESIDENT: {
                     QThread::sleep(5);
-                    stage++;
+                    stage = 2;
                     QThread::sleep(5);
-                    stage++;
+                    stage = 3;
                     QThread::sleep(10);
-                    stage++;
+                    stage = 4;
                     QThread::sleep(5);
-                    stage++;
+                    stage = 5;
                     QThread::sleep(15);
-                    stage++;
+                    stage = 6;
                     QThread::sleep(10);
-                    stage++;
+                    stage = 7;
                     QThread::msleep(10);
                     task = TASK_TRACK;
                     stage = 0;
@@ -63,7 +63,7 @@ public:
                 }
                 case TASK_CROSS: {
                     QThread::sleep(1);
-                    stage++;
+                    stage = 2;
                     QThread::msleep(10);
                     task = TASK_TRACK;
                     stage = 0;
@@ -71,7 +71,7 @@ public:
                 }
                 case TASK_UPSTAIR: {
                     QThread::sleep(7);
-                    stage++;
+                    stage = 2;
                     QThread::msleep(10);
                     task = TASK_TRACK;
                     stage = 0;

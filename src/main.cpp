@@ -143,10 +143,12 @@ void ProcessFrame() {
                 timer.next_color = violet;
             else
                 timer.next_color = green;
+            timer.stage = 1;
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
             cout << "recognized violet" << endl;
             timer.task = TASK_RESIDENT;
             timer.next_color = green;
+            timer.stage = 1;
         } else if (timer.next_color == green && checkColorBarExist(raw_frame, green)) {
             cout << "recognized green" << endl;
             timer.task = TASK_CROSS;
@@ -154,17 +156,19 @@ void ProcessFrame() {
                 timer.next_color = yellow;
             else
                 timer.next_color = red;
+            timer.stage = 1;
         } else if (timer.next_color == red && checkColorBarExist(raw_frame, red)) {
             cout << "recognized red" << endl;
             timer.task = TASK_RESIDENT;
             timer.next_color = yellow;
+            timer.stage = 1;
         } else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
             cout << "recognized yellow" << endl;
             timer.task = TASK_CROSS;
             timer.next_color = red;
             timer.laps++;
+            timer.stage = 1;
         }
-        timer.stage++;
     }
 
     // 动作变换
