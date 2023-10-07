@@ -11,7 +11,7 @@
 #include "util/udp.hpp"
 #include "util/lcm.hpp"
 
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv5/opencv2/opencv.hpp>
 
 
 using namespace cv;
@@ -164,7 +164,7 @@ void ProcessFrame() {
             timer.stage = 1;
         } else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
             cout << "recognized yellow" << endl;
-            timer.task = TASK_CROSS;
+            timer.task = TASK_UPSTAIR;
             timer.next_color = red;
             timer.laps++;
             timer.stage = 1;
@@ -180,6 +180,7 @@ void ProcessFrame() {
     } else if (timer.task == TASK_TRACK) {
         goal_average = 200;
         pose.gesture_type = 3;
+        pose.control_mode = 11;
         pose.step_height = 0.03;
         pose.stand_height = 0.3;
         pose.v_des[0] = 0.2;
@@ -206,11 +207,11 @@ void ProcessFrame() {
         switch (timer.stage) {
             case 1: // prepare
                 pose.stand_height = 0.3;
-                pose.v_des[0] = 0.03;
+                pose.v_des[0] = pose.v_des[1] = pose.v_des[2] = 0.03;
                 break;
             case 2: // dump
                 pose.stand_height = 0.3;
-                pose.v_des[0] = 0.0;
+                pose.v_des[0] = pose.v_des[2] = 0.0;
                 pose.gesture_type = 6;
                 pose.rpy_des[0] = 0.3;
                 pose.control_mode = 3;

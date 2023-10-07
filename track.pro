@@ -25,6 +25,8 @@ INCLUDEPATH += /usr/local/include
 LIBS += -L/usr/local/lib/ -llcm
 #导入opencv 的库
 INCLUDEPATH += /usr/local/include/opencv4/
+INCLUDEPATH += /usr/local/include/opencv5/
+INCLUDEPATH += /usr/local/include/
 INCLUDEPATH += /usr/local/lib/
 LIBS += /usr/local/lib/libopencv_videoio.so \
     -lopencv_calib \
@@ -41,3 +43,5 @@ LIBS += /usr/local/lib/libopencv_videoio.so \
     -lopencv_video
 LIBS +=/usr/local/lib/libopencv_core.so
 LIBS +=/usr/local/lib/libopencv_imgcodecs.so
+
+
