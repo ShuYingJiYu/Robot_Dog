@@ -1,7 +1,7 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv5/opencv2/opencv.hpp>
 #include <QByteArray>
 #include <QVector>
 #include <QUdpSocket>
@@ -13,10 +13,10 @@
 #include <QHostAddress>
 #include <thread>
 #include <QString>
-#include <opencv4/opencv2/imgcodecs.hpp>
-#include <opencv4/opencv2/highgui.hpp>
-#include <opencv4/opencv2/core.hpp>
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv5/opencv2/imgcodecs.hpp>
+#include <opencv5/opencv2/highgui.hpp>
+#include <opencv5/opencv2/core.hpp>
+#include <opencv5/opencv2/opencv.hpp>
 #include <QMutex>
 #include <fstream>
 
