@@ -164,7 +164,7 @@ void ProcessFrame() {
             timer.stage = 1;
         } else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
             cout << "recognized yellow" << endl;
-            timer.task = TASK_CROSS;
+            timer.task = TASK_UPSTAIR;
             timer.next_color = red;
             timer.laps++;
             timer.stage = 1;
