@@ -127,6 +127,11 @@ int getCenterLine(Mat &curr_frame, bool draw_line = true) {
 
 
 void ProcessFrame() {
+    // dont delete this mod
+    if(timer.stage == 0 && pose.control_mode == MODE_STABLE && timer.next_color == green )
+        pose.control_mode = MODE_WALK;
+
+
 
     // white binary frame
     PreProcessFrame(raw_frame, binary_frame, white);
@@ -171,6 +176,7 @@ void ProcessFrame() {
         }
     }
 
+
     // 动作变换
     if (timer.task == TASK_STOP) {
         pose.gesture_type = 6;
@@ -180,7 +186,6 @@ void ProcessFrame() {
     } else if (timer.task == TASK_TRACK) {
         goal_average = 200;
         pose.gesture_type = 3;
-        pose.control_mode = 11;
         pose.step_height = 0.03;
         pose.stand_height = 0.3;
         pose.v_des[0] = 0.2;
@@ -207,11 +212,11 @@ void ProcessFrame() {
         switch (timer.stage) {
             case 1: // prepare
                 pose.stand_height = 0.3;
-                pose.v_des[0] = pose.v_des[1] = pose.v_des[2] = 0.03;
+                pose.v_des[0] = 0.00;
                 break;
             case 2: // dump
                 pose.stand_height = 0.3;
-                pose.v_des[0] = pose.v_des[2] = 0.0;
+                pose.v_des[0] = 0.0;
                 pose.gesture_type = 6;
                 pose.rpy_des[0] = 0.3;
                 pose.control_mode = 3;
@@ -237,6 +242,7 @@ void ProcessFrame() {
                 break;
             case 7:
                 pose.control_mode = MODE_WALK;
+                cout<<"ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp\n";
                 break;
         }
     } else if (timer.task == TASK_CROSS) {
@@ -274,7 +280,7 @@ void ProcessFrame() {
     } else if (timer.task == TASK_UPSTAIR) {
         goal_average = 180;
         pose.gesture_type = 3;
-        pose.step_height = 0.1;
+        pose.step_height = 0.09;
         pose.stand_height = 0.3;
         pose.v_des[0] = 0.3;
         pose.v_des[1] = 0.005f * (goal_average - curr_average);
@@ -285,18 +291,32 @@ void ProcessFrame() {
 int main(int argc, char *argv[]) {
     // 显示图像 default: false
     bool showImage = false;
-
+    bool colorRec = false;
     // parse arguments
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
+            if (argv[i] == string("1")) cout<<"color recognition\n",colorRec=true;
             if (argv[i] == string("showImage")) cout << "showImage" << endl, showImage = true, udp.start();
 
             // mode
             if (argv[i] == string("stop")) cout << "stop" << endl, timer.task = TASK_STOP;
             if (argv[i] == string("track")) cout << "track" << endl, timer.task = TASK_TRACK;
-            if (argv[i] == string("limit")) cout << "limit" << endl, timer.task = TASK_LIMIT;
-            if (argv[i] == string("resident")) cout << "resident" << endl, timer.task = TASK_RESIDENT;
-            if (argv[i] == string("upstair")) cout << "up stair" << endl, timer.task = TASK_UPSTAIR;
+
+            if (argv[i] == string("limit")){
+                if(colorRec == true)
+                    timer.next_color = blue;
+                cout << "limit" << endl, timer.task = TASK_LIMIT;
+            }
+            if (argv[i] == string("resident")){
+                if(colorRec == true)
+                    timer.next_color = violet;
+                cout << "resident" << endl, timer.task = TASK_RESIDENT;
+            }
+            if (argv[i] == string("upstair")){
+                if(colorRec == true)
+                    timer.next_color = yellow;
+                cout << "up stair" << endl, timer.task = TASK_UPSTAIR;
+            }
         }
     }
 

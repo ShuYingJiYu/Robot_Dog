@@ -44,19 +44,19 @@ public:
                     break;
                 }
                 case TASK_RESIDENT: {
-                    QThread::sleep(5);
+                    QThread::sleep(2);
                     stage = 2;
-                    QThread::sleep(5);
+                    QThread::sleep(4);
                     stage = 3;
-                    QThread::sleep(10);
+                    QThread::sleep(4);
                     stage = 4;
-                    QThread::sleep(5);
+                    QThread::sleep(4);
                     stage = 5;
-                    QThread::sleep(15);
+                    QThread::sleep(8);
                     stage = 6;
-                    QThread::sleep(10);
+                    QThread::sleep(12);
                     stage = 7;
-                    QThread::msleep(10);
+                    QThread::msleep(7);
                     task = TASK_TRACK;
                     stage = 0;
                     break;
