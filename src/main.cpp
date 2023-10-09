@@ -154,7 +154,7 @@ void getCenterLine(Mat &curr_frame, int &center, double &k, bool draw_line = tru
                     curr_frame.at<uchar>(i, l + 1) +
                     curr_frame.at<uchar>(i, l - 1) +
                     curr_frame.at<uchar>(i, l + 2) +
-                    curr_frame.at<uchar>(i, l - 3);
+                    curr_frame.at<uchar>(i, l - 2);
             if (c == 255 * 5)
                 break;
         }
