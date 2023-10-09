@@ -17,7 +17,11 @@ enum ModeType {
 };
 
 enum GestureType {
-    GES_STOP = 3,
+    GES_SQUAT,
+    GES_SLOW_WALK = 3,
+    GES_MEDIUM_WALK = 5,
+    GES_STAND = 6,
+    GES_FAST_WALK = 9,
 };
 
 enum TaskType {
@@ -37,7 +41,7 @@ public:
     int32_t control_mode = MODE_DEFAULT;
 
     // 步态类型
-    int32_t gesture_type = GES_STOP;
+    int32_t gesture_type = GES_MEDIUM_WALK;
 
     // 三个方向的速度
     float v_des[3] = {0, 0, 0};
