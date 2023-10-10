@@ -172,8 +172,8 @@ void ProcessFrame() {
             timer.task = TASK_LIMIT;
             if (timer.laps == 1)
                 timer.next_color = violet;
-            else
-                timer.next_color = green;
+            else if (timer.laps == 2)
+                timer.next_color = red;
             timer.stage = 1;
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
             cout << "recognized violet" << endl;
@@ -196,7 +196,7 @@ void ProcessFrame() {
         } else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
             cout << "recognized yellow" << endl;
             timer.task = TASK_UPSTAIR;
-            timer.next_color = red;
+            timer.next_color = blue;
             timer.laps++;
             timer.stage = 1;
         }
