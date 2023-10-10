@@ -94,39 +94,6 @@ bool checkColorBarExist(Mat &curr_frame, int c, bool draw_line = true) {
     return false;
 }
 
-// deprecated
-//int getCenterLine(Mat &curr_frame, bool draw_line = true) {
-//    int sum = 0;
-//    for (int i = 0; i < curr_frame.rows; i++) {
-//        int l, r;
-//        for (l = 1; l < curr_frame.cols - 1; l += 2) {
-//            int c = curr_frame.at<uchar>(i, l) +
-//                    curr_frame.at<uchar>(i, l + 1) +
-//                    curr_frame.at<uchar>(i, l - 1);
-//            if (c == 255 * 3)
-//                break;
-//        }
-//        for (r = curr_frame.cols - 2; r >= 1; r -= 2) {
-//            int c = curr_frame.at<uchar>(i, r) +
-//                    curr_frame.at<uchar>(i, r + 1) +
-//                    curr_frame.at<uchar>(i, r - 1);
-//            if (c == 255 * 3)
-//                break;
-//        }
-//
-//        int center = (l + r) >> 1;
-//        sum += center;
-//        if (draw_line)
-//            curr_frame.at<uchar>(i, center) = 0;
-//    }
-//
-//    int average_line = sum / curr_frame.rows;
-//    if (average_line < 0 || average_line > curr_frame.rows)
-//        return curr_frame.rows / 2; // default value
-//    else
-//        return average_line;
-//}
-
 //! \brief 最小二乘法
 //! \param data 数据
 //! \param len 数据长度
