@@ -11,12 +11,12 @@
 #include "util/udp.hpp"
 #include "util/lcm.hpp"
 
-#include <opencv5/opencv2/opencv.hpp>
+#include <opencv4/opencv2/opencv.hpp>
 
 
 using namespace cv;
 using namespace std;
-bool setno = true;
+
 // 全局摄像头
 VideoCapture cap;
 // 全局图像
@@ -200,7 +200,7 @@ void ProcessFrame() {
    // if (running_count % 10 == 0) cout << "curr_k " << k << endl;
     bool sdf=true;
     // 颜色变换
-    if (timer.stage == 0 && timer.task != TASK_STOP && setno == false) {
+    if (timer.stage == 0 && timer.task != TASK_STOP) {
         if (timer.next_color == blue && checkColorBarExist(raw_frame, blue)) {
             cout << "recognized blue" << endl;
             timer.task = TASK_LIMIT;
