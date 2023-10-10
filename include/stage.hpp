@@ -34,7 +34,7 @@ public:
         while (!isInterruptionRequested()) {
             switch (task) {
                 case TASK_LIMIT: {
-                    QThread::msleep(800);
+                    QThread::msleep(1400);
                     stage = 2;
                     QThread::msleep(4000);
                     stage = 3;
@@ -44,7 +44,7 @@ public:
                     break;
                 }
                 case TASK_RESIDENT: {
-                    QThread::msleep(1500);
+                    QThread::msleep(4000);
                     stage = 2;
                     QThread::msleep(2000);
                     stage = 3;

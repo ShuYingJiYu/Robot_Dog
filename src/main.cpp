@@ -209,14 +209,17 @@ void ProcessFrame() {
         pose.step_height = 0.04;
         pose.stand_height = 0.3;
     } else if (timer.task == TASK_TRACK) {
-        goal_average = 185;
+        if((timer.next_color == violet or timer.next_color == brown) and timer.stage ==0)
+            goal_average = 200;
+        else
+            goal_average =185;
         pose.gesture_type = GES_FAST_WALK;
         pose.step_height = 0.18;
         pose.stand_height = 0.3;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
         if((timer.next_color == green or timer.next_color == yellow) and timer.stage == 0 )
-            pose.v_des[0] = 0.45 - fabs(pose.v_des[2]);
+            pose.v_des[0] = 0.45 - 0.5*fabs(pose.v_des[2]);
         else
             pose.v_des[0] = 0.45;
 //        pose.v_des[2] = (float) (0.8 * k);
