@@ -327,6 +327,25 @@ void ProcessFrame() {
                 // right
                 pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
             }
+        } else if (timer.stage == 3) {
+            goal_average = 180;
+            if (timer.laps == 1) {
+                // left
+                pose.gesture_type = GES_SLOW_WALK;
+                pose.step_height = 0.04;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.3;
+                pose.v_des[2] = 0.2;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            } else {
+                // right
+                pose.gesture_type = GES_SLOW_WALK;
+                pose.step_height = 0.03;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.3;
+                pose.v_des[2] = -0.2;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            }
         }
 
     } else if (timer.task == TASK_UPSTAIR) {
