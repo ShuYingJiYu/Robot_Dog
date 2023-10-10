@@ -172,8 +172,8 @@ void ProcessFrame() {
             timer.task = TASK_LIMIT;
             if (timer.laps == 1)
                 timer.next_color = violet;
-            else if (timer.laps == 2)
-                timer.next_color = red;
+            else if(timer.laps == 2)
+                timer.next_color = green;
             timer.stage = 1;
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
             cout << "recognized violet" << endl;
@@ -186,10 +186,10 @@ void ProcessFrame() {
             if (timer.laps == 1)
                 timer.next_color = yellow;
             else
-                timer.next_color = red;
+                timer.next_color = brown;
             timer.stage = 1;
-        } else if (timer.next_color == red && checkColorBarExist(raw_frame, red)) {
-            cout << "recognized red" << endl;
+        } else if (timer.next_color == brown && checkColorBarExist(raw_frame, brown)) {
+            cout << "recognized brown" << endl;
             timer.task = TASK_RESIDENT;
             timer.next_color = yellow;
             timer.stage = 1;
@@ -213,9 +213,12 @@ void ProcessFrame() {
         pose.gesture_type = GES_FAST_WALK;
         pose.step_height = 0.18;
         pose.stand_height = 0.3;
-        pose.v_des[0] = 0.45;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
+        if((timer.next_color == green or timer.next_color == yellow) and timer.stage == 0 )
+            pose.v_des[0] = 0.45 - fabs(pose.v_des[2]);
+        else
+            pose.v_des[0] = 0.45;
 //        pose.v_des[2] = (float) (0.8 * k);
         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     } else if (timer.task == TASK_LIMIT) {
@@ -248,7 +251,7 @@ void ProcessFrame() {
                 pose.control_mode = MODE_SQUAT;
                 pose.stand_height = 0.3;
                 pose.v_des[0] = 0.0;
-                pose.rpy_des[0] = 0.3;
+                pose.rpy_des[0] = 0.8;
                 break;
             case 3: // stable
                 pose.gesture_type = GES_STAND;
@@ -275,51 +278,45 @@ void ProcessFrame() {
     } else if (timer.task == TASK_CROSS) {
         if (timer.stage == 1) {
             // 进入
-            goal_average = 200;
-            pose.gesture_type = GES_SLOW_WALK;
-            pose.step_height = 0.03;
+            goal_average = 185;
+            pose.gesture_type = GES_FAST_WALK;
+            pose.step_height = 0.18;
             pose.stand_height = 0.3;
-            pose.v_des[0] = 0.3; // 前进
-            pose.v_des[1] = 0.001f * (float) (curr_average - goal_average); // 横移
-            pose.v_des[2] = 0.01f * (float) (goal_average - curr_average); // 转向
+            pose.v_des[0] = 0.45;
+            pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
+            pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
         } else if (timer.stage == 2) {
-            goal_average = 180;
+            pose.gesture_type = GES_MEDIUM_WALK;
+            pose.step_height = 0.03;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.3;
+            goal_average = 200;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             if (timer.laps == 1) {
                 // left
-                pose.gesture_type = GES_SLOW_WALK;
-                pose.step_height = 0.04;
-                pose.stand_height = 0.3;
-                pose.v_des[0] = 0.3;
-                pose.v_des[2] = -0.2;
-                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            } else {
+                pose.v_des[2] = 0.19;
+                cout<<"wo ri nm ri nm ri nm\n";
+
+            } else if (timer.laps == 2 ) {
                 // right
-                pose.gesture_type = GES_SLOW_WALK;
-                pose.step_height = 0.03;
-                pose.stand_height = 0.3;
-                pose.v_des[0] = 0.3;
-                pose.v_des[2] = 0.2;
-                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+                pose.v_des[2] = -0.19;
+                cout<<"wo cnm cnm cnm\n";
             }
         } else if (timer.stage == 3) {
+            goal_average = 185;
+            pose.gesture_type = GES_MEDIUM_WALK;
+            pose.step_height = 0.04;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.3;
             goal_average = 180;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             if (timer.laps == 1) {
                 // left
-                pose.gesture_type = GES_SLOW_WALK;
-                pose.step_height = 0.04;
-                pose.stand_height = 0.3;
-                pose.v_des[0] = 0.3;
-                pose.v_des[2] = 0.2;
-                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            } else {
+                pose.v_des[2] = 0.013 * (goal_average - curr_average);
+            } else if (timer.laps == 2){
                 // right
-                pose.gesture_type = GES_SLOW_WALK;
-                pose.step_height = 0.03;
-                pose.stand_height = 0.3;
-                pose.v_des[0] = 0.3;
-                pose.v_des[2] = -0.2;
-                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+                pose.v_des[2] = 0.013 * (goal_average - curr_average);
             }
         }
 
