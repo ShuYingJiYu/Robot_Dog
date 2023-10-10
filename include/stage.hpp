@@ -63,9 +63,9 @@ public:
                 }
                 case TASK_CROSS: {
                     QThread::msleep(400);
-                    stage =2;
+                    stage = 2;
                     QThread::msleep(3000);
-                    stage =3;
+                    stage = 3;
                     QThread::msleep(3000); //3000
                     task = TASK_TRACK;
                     stage = 0;
