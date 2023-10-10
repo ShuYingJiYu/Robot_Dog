@@ -65,6 +65,8 @@ public:
                     QThread::msleep(500);
                     stage = 2;
                     QThread::sleep(3);
+                    stage = 3;
+                    QThread::sleep(1);
                     task = TASK_TRACK;
                     stage = 0;
                     break;
