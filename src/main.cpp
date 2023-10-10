@@ -35,6 +35,8 @@ TimerThread timer;
 static int running_count = 0;
 // 全局核
 static Mat kernel = getStructuringElement(MORPH_RECT, Size(2, 2));
+// 关闭颜色识别
+static bool disable_color_change = false;
 
 void debug() {
     if (running_count % 20 == 0)
@@ -144,9 +146,6 @@ double leastSquaresMethod(const int data[], int len) {
 int left_arr[300], right_arr[300];
 
 void getCenterLine(Mat &curr_frame, int &center, double &k, bool draw_line = true) {
-
-
-
     // 获取道路边缘
     for (int i = 0; i < curr_frame.rows; i++) {
         int l, r;
@@ -190,7 +189,6 @@ void getCenterLine(Mat &curr_frame, int &center, double &k, bool draw_line = tru
 }
 
 void ProcessFrame() {
-
     // white binary frame
     PreProcessFrame(raw_frame, binary_frame, white);
     static int goal_average = 200;                       // 目标中线均值
@@ -198,8 +196,10 @@ void ProcessFrame() {
     int curr_average;
     getCenterLine(binary_frame, curr_average, k);   // 当前中线均值
     // cout << "curr_average: " << curr_average << endl;
+    // cout << "curr_k" << k << endl;
+
     // 颜色变换
-    if (timer.stage == 0 && timer.task != TASK_STOP) {
+    if (timer.stage == 0 && timer.task != TASK_STOP && !disable_color_change) {
         if (timer.next_color == blue && checkColorBarExist(raw_frame, blue)) {
             cout << "recognized blue" << endl;
             timer.task = TASK_LIMIT;
@@ -248,12 +248,12 @@ void ProcessFrame() {
         pose.stand_height = 0.3;
         pose.v_des[0] = 0.45;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
-        pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
-
+        pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
+//        pose.v_des[2] = (float) (0.8 * k);
         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     } else if (timer.task == TASK_LIMIT) {
         goal_average = 200;
-        pose.gesture_type = 3;
+        pose.gesture_type = GES_SLOW_WALK;
         pose.step_height = 0.01;
         pose.v_des[0] = 0.2;
         pose.v_des[1] = 0.001f * (float) (curr_average - goal_average);
@@ -269,21 +269,21 @@ void ProcessFrame() {
     } else if (timer.task == TASK_RESIDENT) {
         switch (timer.stage) {
             case 1: // prepare
+                pose.step_height = 0.03;
                 pose.stand_height = 0.3;
-                pose.rpy_des[0] = 0;
-                pose.rpy_des[1] = 0;
-                pose.rpy_des[2] = 0;
-                pose.v_des[0] = pose.v_des[1] = pose.v_des[2] = 0.0;
+                pose.v_des[0] = 0.07;
+                pose.v_des[1] = 0.0001f * (float) (curr_average - goal_average);
+                pose.v_des[2] = 0.001f * (float) (goal_average - curr_average);
                 // magic number
                 break;
             case 2: // dump
                 pose.stand_height = 0.3;
                 pose.v_des[0] = 0.0;
                 pose.gesture_type = GES_STAND;
-                pose.rpy_des[0] = 0.4;
+                pose.rpy_des[0] = 0.3;
                 pose.control_mode = 3;
                 break;
-            case 3: // ?
+            case 3: // stable
                 pose.gesture_type = 6;
                 pose.step_height = 0.00;
                 pose.stand_height = 0.3;
@@ -293,59 +293,59 @@ void ProcessFrame() {
                 pose.v_des[0] = 0.0;
                 pose.control_mode = MODE_STABLE;
                 break;
-            case 4:
-                pose.control_mode = 3;
+            case 4: // squat
+                pose.control_mode = MODE_SQUAT;
                 break;
-            case 5:
+            case 5: // ring
                 pose.control_mode = 15;
                 break;
-            case 6:
+            case 6: // stable
                 pose.control_mode = MODE_STABLE;
                 break;
-            case 7:
+            case 7: // continue
                 pose.control_mode = MODE_WALK;
+                pose.v_des[0] = 0.45;
                 break;
         }
     } else if (timer.task == TASK_CROSS) {
         if (timer.stage == 1) {
+            // 进入
             goal_average = 200;
-            pose.gesture_type = 3;
+            pose.gesture_type = GES_SLOW_WALK;
             pose.step_height = 0.03;
             pose.stand_height = 0.3;
-
-            pose.v_des[0] = 0.2; // 前进
+            pose.v_des[0] = 0.3; // 前进
             pose.v_des[1] = 0.001f * (float) (curr_average - goal_average); // 横移
-            pose.v_des[2] = 0.008f * (float) (goal_average - curr_average); // 转向
+            pose.v_des[2] = 0.01f * (float) (goal_average - curr_average); // 转向
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-
         } else {
             goal_average = 180;
             if (timer.laps == 1) {
                 // left
-                pose.gesture_type = 3;
+                pose.gesture_type = GES_SLOW_WALK;
                 pose.step_height = 0.04;
                 pose.stand_height = 0.3;
-                pose.v_des[0] = 0.2;
+                pose.v_des[0] = 0.3;
                 pose.v_des[2] = -0.2;
                 pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             } else {
                 // right
-                pose.gesture_type = 3;
+                pose.gesture_type = GES_SLOW_WALK;
                 pose.step_height = 0.03;
                 pose.stand_height = 0.3;
-                pose.v_des[0] = 0.2;
+                pose.v_des[0] = 0.3;
                 pose.v_des[2] = 0.2;
                 pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             }
         }
 
     } else if (timer.task == TASK_UPSTAIR) {
-        goal_average = 195;
-        pose.gesture_type = 3;
-        pose.step_height = 0.095;
+        goal_average = 190;
+        pose.gesture_type = GES_SLOW_WALK;
+        pose.step_height = 0.09;
         pose.stand_height = 0.3;
         pose.v_des[0] = 0.45;
-        pose.v_des[2] = 0.001*(goal_average-curr_average);
+        pose.v_des[1] = 0.001f * (float) (goal_average - curr_average);
         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     }
 }
@@ -358,8 +358,8 @@ int main(int argc, char *argv[]) {
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
             if (argv[i] == string("showImage")) cout << "showImage" << endl, showImage = true, udp.start();
+            if (argv[i] == string("disable")) cout << "disable color change" << endl, disable_color_change = true;
 
-            if (argv[i] == string("no")) setno=false;
             // mode
             if (argv[i] == string("stop")) cout << "stop" << endl, timer.task = TASK_STOP;
             if (argv[i] == string("track")) cout << "track" << endl, timer.task = TASK_TRACK;
@@ -368,7 +368,7 @@ int main(int argc, char *argv[]) {
             if (argv[i] == string("upstair")) cout << "up stair" << endl, timer.task = TASK_UPSTAIR;
 
             // color
-            if (argv[i] == string("blue")) cout << "next " << endl, timer.next_color = blue;
+            if (argv[i] == string("blue")) cout << "next blue" << endl, timer.next_color = blue;
             if (argv[i] == string("yellow")) cout << "next yellow" << endl, timer.next_color = yellow;
             if (argv[i] == string("violet")) cout << "next violet" << endl, timer.next_color = violet;
             if (argv[i] == string("green")) cout << "next green" << endl, timer.next_color = green;

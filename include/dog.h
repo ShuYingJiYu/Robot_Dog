@@ -12,6 +12,7 @@ using namespace std;
 
 enum ModeType {
     MODE_DEFAULT = 0,
+    MODE_SQUAT = 3,
     MODE_WALK = 11,
     MODE_STABLE = 12,
 };

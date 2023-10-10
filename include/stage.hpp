@@ -39,7 +39,6 @@ public:
                     QThread::msleep(4000);
                     stage = 3;
                     QThread::msleep(800);
-
                     task = TASK_TRACK;
                     stage = 0;
                     break;
@@ -63,9 +62,9 @@ public:
                     break;
                 }
                 case TASK_CROSS: {
-                    QThread::sleep(1);
+                    QThread::msleep(500);
                     stage = 2;
-                    QThread::sleep(1);
+                    QThread::sleep(3);
                     task = TASK_TRACK;
                     stage = 0;
                     break;
@@ -81,7 +80,6 @@ public:
             }
             QThread::msleep(50);
         }
-
         cout << "Running Time: "
              << chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - start_time).count()
              << "s" << endl;
