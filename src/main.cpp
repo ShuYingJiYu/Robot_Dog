@@ -172,7 +172,7 @@ void ProcessFrame() {
             timer.task = TASK_LIMIT;
             if (timer.laps == 1)
                 timer.next_color = violet;
-            else if (timer.laps == 2)
+            else if(timer.laps == 2)
                 timer.next_color = green;
             timer.stage = 1;
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
@@ -209,19 +209,20 @@ void ProcessFrame() {
         pose.step_height = 0.04;
         pose.stand_height = 0.3;
     } else if (timer.task == TASK_TRACK) {
-        if (timer.next_color == violet or timer.next_color == brown and timer.stage == 0)
+        if((timer.next_color == violet or timer.next_color == brown) and timer.stage ==0)
             goal_average = 200;
         else
-            goal_average = 185;
+            goal_average =185;
         pose.gesture_type = GES_FAST_WALK;
         pose.step_height = 0.18;
         pose.stand_height = 0.3;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-        if ((timer.next_color == green or timer.next_color == yellow) and timer.stage == 0)
-            pose.v_des[0] = 0.45f - 0.5f * fabs(pose.v_des[2]);
+        if((timer.next_color == green or timer.next_color == yellow) and timer.stage == 0 )
+            pose.v_des[0] = 0.45 - 0.5*fabs(pose.v_des[2]);
         else
             pose.v_des[0] = 0.45;
+//        pose.v_des[2] = (float) (0.8 * k);
         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     } else if (timer.task == TASK_LIMIT) {
         goal_average = 200;
@@ -298,10 +299,12 @@ void ProcessFrame() {
             if (timer.laps == 1) {
                 // left
                 pose.v_des[2] = 0.19;
+                cout<<"wo ri nm ri nm ri nm\n";
 
-            } else if (timer.laps == 2) {
+            } else if (timer.laps == 2 ) {
                 // right
-                pose.v_des[2] = -0.19;
+                pose.v_des[2] = -0.24;
+                cout<<"wo cnm cnm cnm\n";
             }
         } else if (timer.stage == 3) {
             goal_average = 185;
@@ -313,10 +316,10 @@ void ProcessFrame() {
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             if (timer.laps == 1) {
                 // left
-                pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
-            } else if (timer.laps == 2) {
+                pose.v_des[2] = 0.013 * (goal_average - curr_average);
+            } else if (timer.laps == 2){
                 // right
-                pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
+                pose.v_des[2] = 0.022 * (goal_average - curr_average);
             }
         }
 
@@ -346,7 +349,7 @@ void ProcessFrame() {
 
 int main(int argc, char *argv[]) {
     // 显示图像 default: false
-    bool showImage = false;
+    bool showImage = true;
 
     // parse arguments
     if (argc > 1) {
