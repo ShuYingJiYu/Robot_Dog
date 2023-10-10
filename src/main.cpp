@@ -303,7 +303,7 @@ void ProcessFrame() {
 
             } else if (timer.laps == 2 ) {
                 // right
-                pose.v_des[2] = -0.19;
+                pose.v_des[2] = -0.24;
                 cout<<"wo cnm cnm cnm\n";
             }
         } else if (timer.stage == 3) {
@@ -319,7 +319,7 @@ void ProcessFrame() {
                 pose.v_des[2] = 0.013 * (goal_average - curr_average);
             } else if (timer.laps == 2){
                 // right
-                pose.v_des[2] = 0.013 * (goal_average - curr_average);
+                pose.v_des[2] = 0.022 * (goal_average - curr_average);
             }
         }
 
