@@ -40,7 +40,7 @@ public:
     int32_t control_mode = MODE_DEFAULT;
 
     // 步态类型
-    int32_t gesture_type = GES_STOP;
+    int32_t gesture_type = GES_MEDIUM_WALK;
 
     // 三个方向的速度
     float v_des[3] = {0, 0, 0};

@@ -39,6 +39,7 @@ public:
                     QThread::msleep(4000);
                     stage = 3;
                     QThread::msleep(800);
+
                     task = TASK_TRACK;
                     stage = 0;
                     break;

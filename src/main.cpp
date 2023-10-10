@@ -146,7 +146,8 @@ int left_arr[300], right_arr[300];
 void getCenterLine(Mat &curr_frame, int &center, double &k, bool draw_line = true) {
 
 
-  // 获取道路边缘
+
+    // 获取道路边缘
     for (int i = 0; i < curr_frame.rows; i++) {
         int l, r;
         for (l = 1; l < curr_frame.cols - 1; l += 2) {
@@ -197,8 +198,6 @@ void ProcessFrame() {
     int curr_average;
     getCenterLine(binary_frame, curr_average, k);   // 当前中线均值
     // cout << "curr_average: " << curr_average << endl;
-   // if (running_count % 10 == 0) cout << "curr_k " << k << endl;
-    bool sdf=true;
     // 颜色变换
     if (timer.stage == 0 && timer.task != TASK_STOP) {
         if (timer.next_color == blue && checkColorBarExist(raw_frame, blue)) {
@@ -250,7 +249,7 @@ void ProcessFrame() {
         pose.v_des[0] = 0.45;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
-//        pose.v_des[2] = (float) (0.8 * k);
+
         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     } else if (timer.task == TASK_LIMIT) {
         goal_average = 200;
@@ -274,7 +273,7 @@ void ProcessFrame() {
                 pose.rpy_des[0] = 0;
                 pose.rpy_des[1] = 0;
                 pose.rpy_des[2] = 0;
-                pose.v_des[0]=pose.v_des[1]= pose.v_des[2] = 0.0;
+                pose.v_des[0] = pose.v_des[1] = pose.v_des[2] = 0.0;
                 // magic number
                 break;
             case 2: // dump
