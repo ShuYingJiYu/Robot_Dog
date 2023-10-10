@@ -17,7 +17,6 @@ enum ModeType {
 };
 
 enum GestureType {
-    GES_SQUAT,
     GES_SLOW_WALK = 3,
     GES_MEDIUM_WALK = 5,
     GES_STAND = 6,

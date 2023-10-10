@@ -34,29 +34,30 @@ public:
         while (!isInterruptionRequested()) {
             switch (task) {
                 case TASK_LIMIT: {
-                    QThread::sleep(1);
+                    QThread::msleep(800);
                     stage = 2;
-                    QThread::sleep(6);
+                    QThread::msleep(4000);
                     stage = 3;
-                    QThread::sleep(1);
+                    QThread::msleep(800);
+
                     task = TASK_TRACK;
                     stage = 0;
                     break;
                 }
                 case TASK_RESIDENT: {
-                    QThread::sleep(2);
+                    QThread::msleep(1500);
                     stage = 2;
-                    QThread::sleep(4);
+                    QThread::msleep(2000);
                     stage = 3;
-                    QThread::sleep(4);
+                    QThread::msleep(800);
                     stage = 4;
-                    QThread::sleep(4);
+                    QThread::msleep(1500);
                     stage = 5;
-                    QThread::sleep(8);
-                    stage = 6;
-                    QThread::sleep(12);
-                    stage = 7;
                     QThread::sleep(7);
+                    stage = 6;
+                    QThread::msleep(5500);
+                    stage = 7;
+                    QThread::msleep(500);
                     task = TASK_TRACK;
                     stage = 0;
                     break;
@@ -70,7 +71,7 @@ public:
                     break;
                 }
                 case TASK_UPSTAIR: {
-                    QThread::sleep(7);
+                    QThread::msleep(2500);
                     stage = 2;
                     QThread::sleep(1);
                     task = TASK_TRACK;
