@@ -62,17 +62,19 @@ public:
                     break;
                 }
                 case TASK_CROSS: {
-                    QThread::msleep(500);
-                    stage = 2;
-                    QThread::sleep(3);
+                    QThread::msleep(400);
+                    stage =2;
+                    QThread::msleep(3000);
+                    stage =3;
+                    QThread::msleep(3000); //3000
                     task = TASK_TRACK;
                     stage = 0;
                     break;
                 }
                 case TASK_UPSTAIR: {
-                    QThread::msleep(2500);
+                    QThread::msleep(400);
                     stage = 2;
-                    QThread::sleep(1);
+                    QThread::sleep(5);
                     task = TASK_TRACK;
                     stage = 0;
                     break;
