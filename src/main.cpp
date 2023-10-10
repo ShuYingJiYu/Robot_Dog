@@ -277,21 +277,19 @@ void ProcessFrame() {
                 // magic number
                 break;
             case 2: // dump
+                pose.gesture_type = GES_STAND;
+                pose.control_mode = MODE_SQUAT;
                 pose.stand_height = 0.3;
                 pose.v_des[0] = 0.0;
-                pose.gesture_type = GES_STAND;
                 pose.rpy_des[0] = 0.3;
-                pose.control_mode = 3;
                 break;
             case 3: // stable
-                pose.gesture_type = 6;
+                pose.gesture_type = GES_STAND;
+                pose.control_mode = MODE_STABLE;
                 pose.step_height = 0.00;
                 pose.stand_height = 0.3;
-                pose.rpy_des[0] = 0;
-                pose.rpy_des[1] = 0;
-                pose.rpy_des[2] = 0;
                 pose.v_des[0] = 0.0;
-                pose.control_mode = MODE_STABLE;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
                 break;
             case 4: // squat
                 pose.control_mode = MODE_SQUAT;
@@ -304,7 +302,7 @@ void ProcessFrame() {
                 break;
             case 7: // continue
                 pose.control_mode = MODE_WALK;
-                pose.v_des[0] = 0.45;
+
                 break;
         }
     } else if (timer.task == TASK_CROSS) {
@@ -340,15 +338,28 @@ void ProcessFrame() {
         }
 
     } else if (timer.task == TASK_UPSTAIR) {
-        goal_average = 190;
-        pose.gesture_type = GES_SLOW_WALK;
-        pose.step_height = 0.09;
-        pose.stand_height = 0.3;
-        pose.v_des[0] = 0.45;
-        pose.v_des[1] = 0.001f * (float) (goal_average - curr_average);
-        pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        if (timer.stage == 1) {
+            goal_average = 185;
+            pose.gesture_type = GES_FAST_WALK;
+            pose.step_height = 0.18;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.45;
+            pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
+            pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        } else if (timer.stage == 2) {
+            goal_average = 195;
+            pose.gesture_type = GES_SLOW_WALK;
+            pose.step_height = 0.09;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.45;
+            pose.v_des[2] = 0.0005f * (float) (goal_average - curr_average);
+            // stupid 2
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        }
     }
 }
+
 
 int main(int argc, char *argv[]) {
     // 显示图像 default: false
@@ -359,6 +370,10 @@ int main(int argc, char *argv[]) {
         for (int i = 1; i < argc; i++) {
             if (argv[i] == string("showImage")) cout << "showImage" << endl, showImage = true, udp.start();
             if (argv[i] == string("disable")) cout << "disable color change" << endl, disable_color_change = true;
+
+            // laps
+            if (argv[i] == string("lap1")) cout << "laps 1" << endl, timer.laps = 1;
+            if (argv[i] == string("lap2")) cout << "laps 2" << endl, timer.laps = 2;
 
             // mode
             if (argv[i] == string("stop")) cout << "stop" << endl, timer.task = TASK_STOP;

@@ -70,9 +70,9 @@ public:
                     break;
                 }
                 case TASK_UPSTAIR: {
-                    QThread::msleep(2500);
+                    QThread::msleep(600);
                     stage = 2;
-                    QThread::sleep(1);
+                    QThread::sleep(5);
                     task = TASK_TRACK;
                     stage = 0;
                     break;
