@@ -31,6 +31,8 @@ enum TaskType {
     TASK_RESIDENT,
     TASK_CROSS,
     TASK_UPSTAIR,
+    TASK_RESIDENT1,
+    TASK_CROSS1
 };
 
 
