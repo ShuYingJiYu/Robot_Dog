@@ -55,8 +55,8 @@ void PreProcessFrame(Mat &before, Mat &after, int c) {
     erode(after, after, kernel, Point(-1, -1), 2);
     dilate(after, after, kernel, Point(-1, -1), 5);
     // morphology
-//    morphologyEx(after, after, MORPH_OPEN, kernel);
-//    morphologyEx(after, after, MORPH_CLOSE, kernel);
+    //    morphologyEx(after, after, MORPH_OPEN, kernel);
+    //    morphologyEx(after, after, MORPH_CLOSE, kernel);
 }
 
 
@@ -182,7 +182,10 @@ void ProcessFrame() {
             timer.stage = 1;
         } else if (timer.next_color == green && checkColorBarExist(raw_frame, green)) {
             cout << "recognized green" << endl;
-            timer.task = TASK_CROSS;
+            if(timer.laps == 2)
+                timer.task = TASK_CROSS;
+            else
+                timer.task = TASK_CROSS1;
             if (timer.laps == 1)
                 timer.next_color = yellow;
             else
@@ -212,7 +215,7 @@ void ProcessFrame() {
         if((timer.next_color == violet or timer.next_color == brown) and timer.stage ==0)
             goal_average = 200;
         else
-            goal_average =185;
+            goal_average = 195;
         pose.gesture_type = GES_FAST_WALK;
         pose.step_height = 0.18;
         pose.stand_height = 0.3;
@@ -222,7 +225,7 @@ void ProcessFrame() {
             pose.v_des[0] = 0.45 - 0.5*fabs(pose.v_des[2]);
         else
             pose.v_des[0] = 0.45;
-//        pose.v_des[2] = (float) (0.8 * k);
+        //        pose.v_des[2] = (float) (0.8 * k);
         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     } else if (timer.task == TASK_LIMIT) {
         goal_average = 200;
@@ -241,42 +244,41 @@ void ProcessFrame() {
         }
     } else if (timer.task == TASK_RESIDENT) {
         switch (timer.stage) {
-            case 1: // prepare
-                pose.step_height = 0.03;
-                pose.stand_height = 0.3;
-                pose.v_des[0] = 0.07;
-                pose.v_des[1] = 0.0001f * (float) (curr_average - goal_average);
-                pose.v_des[2] = 0.001f * (float) (goal_average - curr_average);
-                // magic number
-                break;
-            case 2: // dump
-                pose.gesture_type = GES_STAND;
-                pose.control_mode = MODE_SQUAT;
-                pose.stand_height = 0.3;
-                pose.v_des[0] = 0.0;
-                pose.rpy_des[0] = 0.8;
-                break;
-            case 3: // stable
-                pose.gesture_type = GES_STAND;
-                pose.control_mode = MODE_STABLE;
-                pose.step_height = 0.00;
-                pose.stand_height = 0.3;
-                pose.v_des[0] = 0.0;
-                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-                break;
-            case 4: // squat
-                pose.control_mode = MODE_SQUAT;
-                break;
-            case 5: // ring
-                pose.control_mode = 15;
-                break;
-            case 6: // stable
-                pose.control_mode = MODE_STABLE;
-                break;
-            case 7: // continue
-                pose.control_mode = MODE_WALK;
-
-                break;
+        case 1: // prepare
+            pose.step_height = 0.03;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.07;
+            pose.v_des[1] = 0.0001f * (float) (curr_average - goal_average);
+            pose.v_des[2] = 0.001f * (float) (goal_average - curr_average);
+            // magic number
+            break;
+        case 2: // dump
+            pose.gesture_type = GES_STAND;
+            pose.control_mode = MODE_SQUAT;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.0;
+            pose.rpy_des[0] = 0.8;
+            break;
+        case 3: // stable
+            pose.gesture_type = GES_STAND;
+            pose.control_mode = MODE_STABLE;
+            pose.step_height = 0.00;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.0;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            break;
+        case 4: // squat
+            pose.control_mode = MODE_SQUAT;
+            break;
+        case 5: // ring
+            pose.control_mode = 15;
+            break;
+        case 6: // stable
+            pose.control_mode = MODE_STABLE;
+            break;
+        case 7: // continue
+            pose.control_mode = MODE_WALK;
+            break;
         }
     } else if (timer.task == TASK_CROSS) {
         if (timer.stage == 1) {
@@ -296,16 +298,9 @@ void ProcessFrame() {
             pose.v_des[0] = 0.3;
             goal_average = 200;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            if (timer.laps == 1) {
-                // left
-                pose.v_des[2] = 0.19;
-                cout<<"wo ri nm ri nm ri nm\n";
-
-            } else if (timer.laps == 2 ) {
-                // right
-                pose.v_des[2] = -0.24;
-                cout<<"wo cnm cnm cnm\n";
-            }
+            // right
+            pose.v_des[2] = -0.25;
+            cout<<"right right right\n";
         } else if (timer.stage == 3) {
             goal_average = 185;
             pose.gesture_type = GES_MEDIUM_WALK;
@@ -314,13 +309,8 @@ void ProcessFrame() {
             pose.v_des[0] = 0.3;
             goal_average = 180;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            if (timer.laps == 1) {
-                // left
-                pose.v_des[2] = 0.013 * (goal_average - curr_average);
-            } else if (timer.laps == 2){
-                // right
-                pose.v_des[2] = 0.022 * (goal_average - curr_average);
-            }
+            // right
+            pose.v_des[2] = 0.022 * (goal_average - curr_average);
         }
 
     } else if (timer.task == TASK_UPSTAIR) {
@@ -342,6 +332,37 @@ void ProcessFrame() {
             pose.v_des[2] = 0.0005f * (float) (goal_average - curr_average);
             // stupid 2
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        }
+    } else if (timer.task == TASK_CROSS1) {
+        if (timer.stage == 1) {
+            // 进入
+            goal_average = 200;
+            pose.gesture_type = GES_FAST_WALK;
+            pose.step_height = 0.18;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.45;
+            pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
+            pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        } else if (timer.stage == 2) {
+            pose.gesture_type = GES_MEDIUM_WALK;
+            pose.step_height = 0.03;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.3;
+            goal_average = 205;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            // left
+            pose.v_des[2] = 0.20;
+            cout<<"left left left\n";
+        } else if (timer.stage == 3) {
+            goal_average = 200;
+            pose.gesture_type = GES_MEDIUM_WALK;
+            pose.step_height = 0.04;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.3;
+            goal_average = 180;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            pose.v_des[2] = 0.013 * (goal_average - curr_average);
         }
     }
 }
@@ -365,6 +386,7 @@ int main(int argc, char *argv[]) {
             if (argv[i] == string("stop")) cout << "stop" << endl, timer.task = TASK_STOP;
             if (argv[i] == string("track")) cout << "track" << endl, timer.task = TASK_TRACK;
             if (argv[i] == string("limit")) cout << "limit" << endl, timer.task = TASK_LIMIT;
+            if (argv[i] == string("resident1")) cout << "resident" << endl, timer.task = TASK_RESIDENT1;
             if (argv[i] == string("resident")) cout << "resident" << endl, timer.task = TASK_RESIDENT;
             if (argv[i] == string("upstair")) cout << "up stair" << endl, timer.task = TASK_UPSTAIR;
 
@@ -375,6 +397,7 @@ int main(int argc, char *argv[]) {
             if (argv[i] == string("green")) cout << "next green" << endl, timer.next_color = green;
             if (argv[i] == string("red")) cout << "next red" << endl, timer.next_color = red;
             if (argv[i] == string("orange")) cout << "next orange" << endl, timer.next_color = orange;
+            if (argv[i] == string("brown")) cout << "next brown" << endl, timer.next_color = brown;
         }
     }
 
@@ -433,28 +456,28 @@ int main(int argc, char *argv[]) {
 
             if (udp.receive != 0)
                 switch (udp.receive) {
-                    case 1:
-                        // choose color and return this color threshold
-                        std::cout << "choose color and return this color threshold" << std::endl;
-                        color.setColor(udp.color);
-                        color.sendThreshold();
-                        color.run_continue_flag = true;
-                        break;
-                    case 2:
-                        // set color threshold
-                        std::cout << "set color threshold" << std::endl;
-                        color.setThreshold(udp.color_threshold);
-                        break;
-                    case 3:
-                        // save color threshold
-                        std::cout << "save color threshold" << std::endl;
-                        color.save();
-                        break;
+                case 1:
+                    // choose color and return this color threshold
+                    std::cout << "choose color and return this color threshold" << std::endl;
+                    color.setColor(udp.color);
+                    color.sendThreshold();
+                    color.run_continue_flag = true;
+                    break;
+                case 2:
+                    // set color threshold
+                    std::cout << "set color threshold" << std::endl;
+                    color.setThreshold(udp.color_threshold);
+                    break;
+                case 3:
+                    // save color threshold
+                    std::cout << "save color threshold" << std::endl;
+                    color.save();
+                    break;
                 }
             udp.receive = 0;
         }
 
-        debug();
+        // debug();
 
         // sleep 20ms
         this_thread::sleep_for(chrono::milliseconds(20));
