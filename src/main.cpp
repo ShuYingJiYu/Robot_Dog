@@ -172,7 +172,7 @@ void ProcessFrame() {
             timer.task = TASK_LIMIT;
             if (timer.laps == 1)
                 timer.next_color = violet;
-            else if(timer.laps == 2)
+            else if (timer.laps == 2)
                 timer.next_color = green;
             timer.stage = 1;
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
@@ -182,7 +182,7 @@ void ProcessFrame() {
             timer.stage = 1;
         } else if (timer.next_color == green && checkColorBarExist(raw_frame, green)) {
             cout << "recognized green" << endl;
-            if(timer.laps == 2)
+            if (timer.laps == 2)
                 timer.task = TASK_CROSS;
             else
                 timer.task = TASK_CROSS1;
@@ -212,7 +212,7 @@ void ProcessFrame() {
         pose.step_height = 0.04;
         pose.stand_height = 0.3;
     } else if (timer.task == TASK_TRACK) {
-        if((timer.next_color == violet or timer.next_color == brown) and timer.stage ==0)
+        if ((timer.next_color == violet or timer.next_color == brown) and timer.stage == 0)
             goal_average = 200;
         else
             goal_average = 195;
@@ -221,8 +221,8 @@ void ProcessFrame() {
         pose.stand_height = 0.3;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-        if((timer.next_color == green or timer.next_color == yellow) and timer.stage == 0 )
-            pose.v_des[0] = 0.45 - 0.5*fabs(pose.v_des[2]);
+        if ((timer.next_color == green or timer.next_color == yellow) and timer.stage == 0)
+            pose.v_des[0] = 0.45f - 0.5f * fabs(pose.v_des[2]);
         else
             pose.v_des[0] = 0.45;
         //        pose.v_des[2] = (float) (0.8 * k);
@@ -244,41 +244,41 @@ void ProcessFrame() {
         }
     } else if (timer.task == TASK_RESIDENT) {
         switch (timer.stage) {
-        case 1: // prepare
-            pose.step_height = 0.03;
-            pose.stand_height = 0.3;
-            pose.v_des[0] = 0.07;
-            pose.v_des[1] = 0.0001f * (float) (curr_average - goal_average);
-            pose.v_des[2] = 0.001f * (float) (goal_average - curr_average);
-            // magic number
-            break;
-        case 2: // dump
-            pose.gesture_type = GES_STAND;
-            pose.control_mode = MODE_SQUAT;
-            pose.stand_height = 0.3;
-            pose.v_des[0] = 0.0;
-            pose.rpy_des[0] = 0.8;
-            break;
-        case 3: // stable
-            pose.gesture_type = GES_STAND;
-            pose.control_mode = MODE_STABLE;
-            pose.step_height = 0.00;
-            pose.stand_height = 0.3;
-            pose.v_des[0] = 0.0;
-            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            break;
-        case 4: // squat
-            pose.control_mode = MODE_SQUAT;
-            break;
-        case 5: // ring
-            pose.control_mode = 15;
-            break;
-        case 6: // stable
-            pose.control_mode = MODE_STABLE;
-            break;
-        case 7: // continue
-            pose.control_mode = MODE_WALK;
-            break;
+            case 1: // prepare
+                pose.step_height = 0.03;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.07;
+                pose.v_des[1] = 0.0001f * (float) (curr_average - goal_average);
+                pose.v_des[2] = 0.001f * (float) (goal_average - curr_average);
+                // magic number
+                break;
+            case 2: // dump
+                pose.gesture_type = GES_STAND;
+                pose.control_mode = MODE_SQUAT;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.0;
+                pose.rpy_des[0] = 0.8;
+                break;
+            case 3: // stable
+                pose.gesture_type = GES_STAND;
+                pose.control_mode = MODE_STABLE;
+                pose.step_height = 0.00;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.0;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+                break;
+            case 4: // squat
+                pose.control_mode = MODE_SQUAT;
+                break;
+            case 5: // ring
+                pose.control_mode = 15;
+                break;
+            case 6: // stable
+                pose.control_mode = MODE_STABLE;
+                break;
+            case 7: // continue
+                pose.control_mode = MODE_WALK;
+                break;
         }
     } else if (timer.task == TASK_CROSS) {
         if (timer.stage == 1) {
@@ -300,7 +300,7 @@ void ProcessFrame() {
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             // right
             pose.v_des[2] = -0.25;
-            cout<<"right right right\n";
+            cout << "right right right\n";
         } else if (timer.stage == 3) {
             goal_average = 185;
             pose.gesture_type = GES_MEDIUM_WALK;
@@ -310,7 +310,7 @@ void ProcessFrame() {
             goal_average = 180;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             // right
-            pose.v_des[2] = 0.022 * (goal_average - curr_average);
+            pose.v_des[2] = 0.022f * (float) (goal_average - curr_average);
         }
 
     } else if (timer.task == TASK_UPSTAIR) {
@@ -353,7 +353,7 @@ void ProcessFrame() {
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             // left
             pose.v_des[2] = 0.20;
-            cout<<"left left left\n";
+            cout << "left left left\n";
         } else if (timer.stage == 3) {
             goal_average = 200;
             pose.gesture_type = GES_MEDIUM_WALK;
@@ -362,7 +362,7 @@ void ProcessFrame() {
             pose.v_des[0] = 0.3;
             goal_average = 180;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            pose.v_des[2] = 0.013 * (goal_average - curr_average);
+            pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
         }
     }
 }
@@ -456,23 +456,23 @@ int main(int argc, char *argv[]) {
 
             if (udp.receive != 0)
                 switch (udp.receive) {
-                case 1:
-                    // choose color and return this color threshold
-                    std::cout << "choose color and return this color threshold" << std::endl;
-                    color.setColor(udp.color);
-                    color.sendThreshold();
-                    color.run_continue_flag = true;
-                    break;
-                case 2:
-                    // set color threshold
-                    std::cout << "set color threshold" << std::endl;
-                    color.setThreshold(udp.color_threshold);
-                    break;
-                case 3:
-                    // save color threshold
-                    std::cout << "save color threshold" << std::endl;
-                    color.save();
-                    break;
+                    case 1:
+                        // choose color and return this color threshold
+                        std::cout << "choose color and return this color threshold" << std::endl;
+                        color.setColor(udp.color);
+                        color.sendThreshold();
+                        color.run_continue_flag = true;
+                        break;
+                    case 2:
+                        // set color threshold
+                        std::cout << "set color threshold" << std::endl;
+                        color.setThreshold(udp.color_threshold);
+                        break;
+                    case 3:
+                        // save color threshold
+                        std::cout << "save color threshold" << std::endl;
+                        color.save();
+                        break;
                 }
             udp.receive = 0;
         }
