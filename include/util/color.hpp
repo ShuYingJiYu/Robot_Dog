@@ -28,7 +28,6 @@ using namespace std;
 QMutex qMutex;
 
 enum Color {
-    none,
     yellow,
     white,
     blue,
@@ -37,7 +36,8 @@ enum Color {
     green,
     red,
     orange,
-    Color_COUNT
+    Color_COUNT,
+    none,
 };
 
 unordered_map<string, int> color2index{
