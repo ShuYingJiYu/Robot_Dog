@@ -21,13 +21,13 @@ HEADERS += include/dog.h include/stage.hpp include/util/color.hpp include/util/l
 #导入lcm 的库
 INCLUDEPATH += ./include
 INCLUDEPATH += ./LCM
-LIBS += -L/usr/lib/ -llcm
-# 导入opencv 的库
-INCLUDEPATH += /usr/include/opencv4
-INCLUDEPATH += /usr/include/opencv4/opencv2
-INCLUDEPATH += /usr/lib/
-LIBS += /usr/lib/libopencv_videoio.so
-    -lopencv_calib3d \
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/lib/ -llcm
+#导入opencv 的库
+INCLUDEPATH += /usr/local/include/opencv4/
+INCLUDEPATH += /usr/local/lib/
+LIBS += /usr/local/lib/libopencv_videoio.so \
+    -lopencv_calib \
     -lopencv_core \
     -lopencv_features2d \
     -lopencv_flann \
@@ -37,6 +37,7 @@ LIBS += /usr/lib/libopencv_videoio.so
     -lopencv_objdetect \
     -lopencv_photo \
     -lopencv_stitching \
+    -lopencv_wechat_qrcode
     -lopencv_video
-LIBS += /usr/lib/libopencv_core.so
-LIBS += /usr/lib/libopencv_imgcodecs.so
+LIBS +=/usr/local/lib/libopencv_core.so
+LIBS +=/usr/local/lib/libopencv_imgcodecs.so
