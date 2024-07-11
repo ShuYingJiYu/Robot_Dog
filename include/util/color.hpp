@@ -36,8 +36,7 @@ enum Color {
     green,
     red,
     orange,
-    Color_COUNT,
-    none,
+    _size, // trick to get enum size
 };
 
 unordered_map<string, int> color2index{
@@ -65,7 +64,7 @@ using namespace std;
 class ColorThread : public QThread {
 public:
     ColorThread() {
-        color_list.resize(Color_COUNT);
+        color_list.resize(_size);
         color_list[yellow] = {{0,   0,   0},
                               {255, 255, 255}};
         color_list[white] = {{0,   155, 1},
@@ -207,7 +206,7 @@ private:
     int color = white;
     Mat raw_img, binary_img;
 
-    int destination = 1;
+    int destination;
 
     void read() {
         std::ifstream file("ColorGroup.txt");

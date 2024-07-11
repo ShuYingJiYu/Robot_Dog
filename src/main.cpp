@@ -202,7 +202,7 @@ void ProcessFrame() {
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
             cout << "recognized violet" << endl;
             timer.task = TASK_RESIDENT_RIGHT;
-            timer.next_color = none;
+            timer.next_color = _size;
             timer.stage = 1;
             timer.laps++;
         }
