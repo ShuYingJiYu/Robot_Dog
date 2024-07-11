@@ -13,6 +13,8 @@
 
 #include <opencv4/opencv2/opencv.hpp>
 
+#define WIDTH 800
+#define HEIGHT 600
 
 using namespace cv;
 using namespace std;
@@ -37,6 +39,8 @@ static int running_count = 0;
 static Mat kernel = getStructuringElement(MORPH_RECT, Size(2, 2));
 // 关闭颜色识别
 static bool disable_color_change = false;
+// 左右边缘数组
+int left_arr[HEIGHT], right_arr[HEIGHT];
 
 void debug() {
     if (running_count % 20 == 0)
@@ -47,6 +51,11 @@ void debug() {
 }
 
 void PreProcessFrame(Mat &before, Mat &after, int c) {
+    if (c == white) {
+        // 灰度
+        cvtColor(before, after, COLOR_BGR2GRAY);
+    }
+
     // min, max
     Scalar min = color.get_min(c);
     Scalar max = color.get_max(c);
@@ -110,7 +119,6 @@ double leastSquaresMethod(const int data[], int len) {
     return k;
 }
 
-int left_arr[300], right_arr[300];
 
 void getCenterLine(Mat &curr_frame, int &center, double &k, bool draw_line = true) {
     // 获取道路边缘
@@ -150,15 +158,15 @@ void getCenterLine(Mat &curr_frame, int &center, double &k, bool draw_line = tru
 
     // 最小二乘法
     double left_k, right_k;
-    left_k = leastSquaresMethod(left_arr, 300);
-    right_k = leastSquaresMethod(right_arr, 300);
+    left_k = leastSquaresMethod(left_arr, HEIGHT);
+    right_k = leastSquaresMethod(right_arr, HEIGHT);
     k = (left_k + right_k) / 2;
 }
 
 void ProcessFrame() {
     // white binary frame
     PreProcessFrame(raw_frame, binary_frame, white);
-    static int goal_average = 200;                       // 目标中线均值
+    static int goal_average = WIDTH / 2;                       // 目标中线均值
     double k;
     int curr_average;
     getCenterLine(binary_frame, curr_average, k);   // 当前中线均值
@@ -194,7 +202,7 @@ void ProcessFrame() {
         } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
             cout << "recognized violet" << endl;
             timer.task = TASK_RESIDENT_RIGHT;
-            timer.next_color = blue;
+            timer.next_color = none;
             timer.stage = 1;
             timer.laps++;
         }
@@ -245,9 +253,9 @@ void ProcessFrame() {
         pose.stand_height = 0.3;
     } else if (timer.task == TASK_TRACK) {
         if ((timer.next_color == violet or timer.next_color == brown) and timer.stage == 0)
-            goal_average = 200;
+            goal_average = 200 * 2;
         else
-            goal_average = 195;
+            goal_average = 195 * 2;
         pose.gesture_type = GES_FAST_WALK;
         pose.step_height = 0.18;
         pose.stand_height = 0.3;
@@ -260,7 +268,7 @@ void ProcessFrame() {
         //        pose.v_des[2] = (float) (0.8 * k);
         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
     } else if (timer.task == TASK_LIMIT) {
-        goal_average = 200;
+        goal_average = 200 * 2;
         pose.gesture_type = GES_SLOW_WALK;
         pose.step_height = 0.01;
         pose.v_des[0] = 0.2;
@@ -277,7 +285,7 @@ void ProcessFrame() {
     } else if (timer.task == TASK_CROSS_LEFT) {
         if (timer.stage == 1) {
             // 进入
-            goal_average = 200;
+            goal_average = 185 * 2;
             pose.gesture_type = GES_FAST_WALK;
             pose.step_height = 0.18;
             pose.stand_height = 0.3;
@@ -290,25 +298,25 @@ void ProcessFrame() {
             pose.step_height = 0.03;
             pose.stand_height = 0.3;
             pose.v_des[0] = 0.3;
-            goal_average = 205;
+            goal_average = 185 * 2;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             // left
             pose.v_des[2] = 0.20;
             cout << "left left left\n";
         } else if (timer.stage == 3) {
-            goal_average = 200;
+            goal_average = 185 * 2;
             pose.gesture_type = GES_MEDIUM_WALK;
             pose.step_height = 0.04;
             pose.stand_height = 0.3;
             pose.v_des[0] = 0.3;
-            goal_average = 180;
+            goal_average = 180 * 2;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
         }
     } else if (timer.task == TASK_CROSS_RIGHT) {
         if (timer.stage == 1) {
             // 进入
-            goal_average = 185;
+            goal_average = 210 * 2;
             pose.gesture_type = GES_FAST_WALK;
             pose.step_height = 0.18;
             pose.stand_height = 0.3;
@@ -321,18 +329,18 @@ void ProcessFrame() {
             pose.step_height = 0.03;
             pose.stand_height = 0.3;
             pose.v_des[0] = 0.3;
-            goal_average = 200;
+            goal_average = 210 * 2;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             // right
             pose.v_des[2] = -0.25;
             cout << "right right right\n";
         } else if (timer.stage == 3) {
-            goal_average = 185;
+            goal_average = 210 * 2;
             pose.gesture_type = GES_MEDIUM_WALK;
             pose.step_height = 0.04;
             pose.stand_height = 0.3;
             pose.v_des[0] = 0.3;
-            goal_average = 180;
+            goal_average = 210 * 2;
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             // right
             pose.v_des[2] = 0.022f * (float) (goal_average - curr_average);
@@ -608,8 +616,8 @@ int main(int argc, char *argv[]) {
         cap >> raw_frame; // read raw_frame
         if (raw_frame.empty()) continue; // skip empty raw_frame
 
-        resize(raw_frame, raw_frame, Size(400, 300), 0, 0, INTER_LINEAR);
-        GaussianBlur(raw_frame, raw_frame, Size(5, 5), 0, 0);
+        resize(raw_frame, raw_frame, Size(400 * 2, 300 * 2), 0, 0, INTER_LINEAR);
+        GaussianBlur(raw_frame, raw_frame, Size(9, 9), 0, 0);
 
         ProcessFrame();
         pLcmUtil->send(pose);

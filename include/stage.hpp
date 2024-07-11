@@ -35,7 +35,7 @@ public:
                 case TASK_LIMIT: {
                     QThread::msleep(800);
                     stage = 2;
-                    QThread::msleep(4500);
+                    QThread::msleep(5000);
                     stage = 3;
                     QThread::msleep(600);
                     task = TASK_TRACK;
@@ -69,6 +69,9 @@ public:
                     stage = 3;
                     QThread::msleep(800);
                     stage = 4;
+                    QThread::msleep(500);
+                    task = TASK_TRACK;
+                    stage = 0;
                     break;
                 }
                 case TASK_RESIDENT_RIGHT: {
@@ -78,6 +81,9 @@ public:
                     stage = 3;
                     QThread::msleep(800);
                     stage = 4;
+                    QThread::msleep(500);
+                    task = TASK_TRACK;
+                    stage = 0;
                     break;
                 }
 //                case TASK_RESIDENT: {

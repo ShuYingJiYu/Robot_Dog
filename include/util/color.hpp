@@ -28,6 +28,7 @@ using namespace std;
 QMutex qMutex;
 
 enum Color {
+    none,
     yellow,
     white,
     blue,
