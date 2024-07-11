@@ -9,7 +9,6 @@
 
 using namespace std;
 
-
 class TimerThread : public QThread {
 public:
     int task = TASK_STOP;
@@ -43,52 +42,86 @@ public:
                     stage = 0;
                     break;
                 }
-                case TASK_RESIDENT: {
-                    QThread::msleep(3600);
-                    stage = 2;
-                    QThread::msleep(2000);
-                    stage = 3;
-                    QThread::msleep(800);
-                    stage = 4;
-                    QThread::msleep(1500);
-                    stage = 5;
-                    QThread::sleep(7);
-                    stage = 6;
-                    QThread::msleep(5500);
-                    stage = 7;
-                    QThread::msleep(500);
-                    task = TASK_TRACK;
-                    stage = 0;
-                    break;
-                }
-                case TASK_CROSS: {
+                case TASK_CROSS_LEFT: {
                     QThread::msleep(400);
                     stage = 2;
                     QThread::msleep(4000);
                     stage = 3;
-                    QThread::msleep(3000); //3000
+                    QThread::msleep(3000); // 3000
                     task = TASK_TRACK;
                     stage = 0;
                     break;
                 }
-                case TASK_CROSS1: {
+                case TASK_CROSS_RIGHT: {
                     QThread::msleep(300);
                     stage = 2;
                     QThread::msleep(2900);
                     stage = 3;
-                    QThread::msleep(2500); //3000
+                    QThread::msleep(2500); // 3000
                     task = TASK_TRACK;
                     stage = 0;
                     break;
                 }
-                case TASK_UPSTAIR: {
-                    QThread::msleep(400);
+                case TASK_RESIDENT_LEFT:  {
+                    QThread::msleep(3600);
                     stage = 2;
-                    QThread::sleep(5);
-                    task = TASK_TRACK;
-                    stage = 0;
+                    QThread::msleep(2000);
+                    stage = 3;
                     break;
                 }
+                case TASK_RESIDENT_RIGHT: {
+                    QThread::msleep(3600);
+                    stage = 2;
+                    QThread::msleep(2000);
+                    stage = 3;
+                    break;
+                }
+//                case TASK_RESIDENT: {
+//                    QThread::msleep(3600);
+//                    stage = 2;
+//                    QThread::msleep(2000);
+//                    stage = 3;
+//                    QThread::msleep(800);
+//                    stage = 4;
+//                    QThread::msleep(1500);
+//                    stage = 5;
+//                    QThread::sleep(7);
+//                    stage = 6;
+//                    QThread::msleep(5500);
+//                    stage = 7;
+//                    QThread::msleep(500);
+//                    task = TASK_TRACK;
+//                    stage = 0;
+//                    break;
+//                }
+//                case TASK_CROSS: {
+//                    QThread::msleep(400);
+//                    stage = 2;
+//                    QThread::msleep(4000);
+//                    stage = 3;
+//                    QThread::msleep(3000); // 3000
+//                    task = TASK_TRACK;
+//                    stage = 0;
+//                    break;
+//                }
+//                case TASK_CROSS1: {
+//                    QThread::msleep(300);
+//                    stage = 2;
+//                    QThread::msleep(2900);
+//                    stage = 3;
+//                    QThread::msleep(2500); // 3000
+//                    task = TASK_TRACK;
+//                    stage = 0;
+//                    break;
+//                }
+//                case TASK_UPSTAIR: {
+//                    QThread::msleep(400);
+//                    stage = 2;
+//                    QThread::sleep(5);
+//                    task = TASK_TRACK;
+//                    stage = 0;
+//                    break;
+//                }
             }
             QThread::msleep(50);
         }
