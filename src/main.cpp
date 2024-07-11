@@ -354,7 +354,15 @@ void ProcessFrame() {
                 pose.v_des[0] = 0.0;
                 pose.rpy_des[0] = -0.8;
                 break;
-            case 3: // continue
+            case 3: // stable
+                pose.gesture_type = GES_STAND;
+                pose.control_mode = MODE_STABLE;
+                pose.step_height = 0.00;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.0;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+                break;
+            case 4: // continue
                 pose.control_mode = MODE_WALK;
                 break;
         }
@@ -375,7 +383,15 @@ void ProcessFrame() {
                 pose.v_des[0] = 0.0;
                 pose.rpy_des[0] = 0.8;
                 break;
-            case 3: // continue
+            case 3: // stable
+                pose.gesture_type = GES_STAND;
+                pose.control_mode = MODE_STABLE;
+                pose.step_height = 0.00;
+                pose.stand_height = 0.3;
+                pose.v_des[0] = 0.0;
+                pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+                break;
+            case 4: // continue
                 pose.control_mode = MODE_WALK;
                 break;
         }
@@ -516,7 +532,7 @@ int main(int argc, char *argv[]) {
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
             if (argv[i] == string("help")) {
-                cout << "Usage: " << argv[0] << " [showImage] [disable] [lap1|lap2] " 
+                cout << "Usage: " << argv[0] << " [showImage] [disable] [lap1|lap2] "
                      << "[stop|track|limit|resident|cross|upstair|resident1|cross1|crossleft|crossright|residentleft|residentright] "
                      << "[blue|yellow|violet|green|red|orange|brown]" << endl;
                 return 0;

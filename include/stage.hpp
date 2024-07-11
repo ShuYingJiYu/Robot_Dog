@@ -62,11 +62,13 @@ public:
                     stage = 0;
                     break;
                 }
-                case TASK_RESIDENT_LEFT:  {
+                case TASK_RESIDENT_LEFT: {
                     QThread::msleep(3600);
                     stage = 2;
                     QThread::msleep(2000);
                     stage = 3;
+                    QThread::msleep(800);
+                    stage = 4;
                     break;
                 }
                 case TASK_RESIDENT_RIGHT: {
@@ -74,6 +76,8 @@ public:
                     stage = 2;
                     QThread::msleep(2000);
                     stage = 3;
+                    QThread::msleep(800);
+                    stage = 4;
                     break;
                 }
 //                case TASK_RESIDENT: {
