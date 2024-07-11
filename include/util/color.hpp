@@ -67,18 +67,18 @@ public:
         color_list.resize(_size);
         color_list[yellow] = {{0,   0,   0},
                               {255, 255, 255}};
-        color_list[white] = {{0,   155, 1},
-                             {200, 200, 200}};
-        color_list[blue] = {{158, 109, 0},
-                            {255, 209, 84}};
-        color_list[violet] = {{12, 123, 79},
-                              {93, 200, 149}};
-        color_list[brown] = {{79,  74,  118},
+        color_list[white] = {{0,   0,   0},
                              {255, 255, 255}};
-        color_list[green] = {{0,  0,   0},
-                             {98, 116, 114}};
-        color_list[red] = {{158, 109, 0},
-                           {255, 209, 84}};
+        color_list[blue] = {{0,   0,   0},
+                            {255, 255, 255}};
+        color_list[violet] = {{0,   0,   0},
+                              {255, 255, 255}};
+        color_list[brown] = {{0,   0,   0},
+                             {255, 255, 255}};
+        color_list[green] = {{0,   0,   0},
+                             {255, 255, 255}};
+        color_list[red] = {{0,   0,   0},
+                           {255, 255, 255}};
         color_list[orange] = {{0,   0,   0},
                               {255, 255, 255}};
 
