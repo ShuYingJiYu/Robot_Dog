@@ -277,6 +277,37 @@ void ProcessFrame() {
     } else if (timer.task == TASK_CROSS_LEFT) {
         if (timer.stage == 1) {
             // 进入
+            goal_average = 200;
+            pose.gesture_type = GES_FAST_WALK;
+            pose.step_height = 0.18;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.45;
+            pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
+            pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        } else if (timer.stage == 2) {
+            pose.gesture_type = GES_MEDIUM_WALK;
+            pose.step_height = 0.03;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.3;
+            goal_average = 205;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            // left
+            pose.v_des[2] = 0.20;
+            cout << "left left left\n";
+        } else if (timer.stage == 3) {
+            goal_average = 200;
+            pose.gesture_type = GES_MEDIUM_WALK;
+            pose.step_height = 0.04;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.3;
+            goal_average = 180;
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+            pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
+        }
+    } else if (timer.task == TASK_CROSS_RIGHT) {
+        if (timer.stage == 1) {
+            // 进入
             goal_average = 185;
             pose.gesture_type = GES_FAST_WALK;
             pose.step_height = 0.18;
@@ -305,37 +336,6 @@ void ProcessFrame() {
             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
             // right
             pose.v_des[2] = 0.022f * (float) (goal_average - curr_average);
-        }
-    } else if (timer.task == TASK_CROSS_RIGHT) {
-        if (timer.stage == 1) {
-            // 进入
-            goal_average = 200;
-            pose.gesture_type = GES_FAST_WALK;
-            pose.step_height = 0.18;
-            pose.stand_height = 0.3;
-            pose.v_des[0] = 0.45;
-            pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
-            pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-        } else if (timer.stage == 2) {
-            pose.gesture_type = GES_MEDIUM_WALK;
-            pose.step_height = 0.03;
-            pose.stand_height = 0.3;
-            pose.v_des[0] = 0.3;
-            goal_average = 205;
-            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            // left
-            pose.v_des[2] = 0.20;
-            cout << "left left left\n";
-        } else if (timer.stage == 3) {
-            goal_average = 200;
-            pose.gesture_type = GES_MEDIUM_WALK;
-            pose.step_height = 0.04;
-            pose.stand_height = 0.3;
-            pose.v_des[0] = 0.3;
-            goal_average = 180;
-            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-            pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
         }
     } else if (timer.task == TASK_RESIDENT_LEFT) {
         switch (timer.stage) {
