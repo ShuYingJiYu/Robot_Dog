@@ -41,12 +41,15 @@ static Mat kernel = getStructuringElement(MORPH_RECT, Size(2, 2));
 static bool disable_color_change = false;
 // 左右边缘数组
 int left_arr[HEIGHT], right_arr[HEIGHT];
+// 当前中线
+int curr_average = 0;
 
 void debug() {
-    if (running_count % 20 == 0)
+    if (running_count % 10 == 0)
         cout << "\n  =====  running: " << running_count << "  =====  " << endl
              << timer.DebugString() << endl
-             << pose.DebugString() << endl;
+             << pose.DebugString() << endl
+             << "\tAverage: " << curr_average << endl;
     running_count++;
 }
 
@@ -168,7 +171,7 @@ void ProcessFrame() {
     PreProcessFrame(raw_frame, binary_frame, white);
     static int goal_average = WIDTH / 2;                       // 目标中线均值
     double k;
-    int curr_average;
+
     getCenterLine(binary_frame, curr_average, k);   // 当前中线均值
     // cout << "curr_average: " << curr_average << endl;
     // cout << "curr_k" << k << endl;
@@ -261,7 +264,7 @@ void ProcessFrame() {
         pose.stand_height = 0.3;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-        if ((timer.next_color == green or timer.next_color == yellow) and timer.stage == 0)
+        if ((timer.next_color == green or timer.next_color == red) and timer.stage == 0)
             pose.v_des[0] = 0.45f - 0.5f * fabs(pose.v_des[2]);
         else
             pose.v_des[0] = 0.45;
@@ -270,7 +273,7 @@ void ProcessFrame() {
     } else if (timer.task == TASK_LIMIT) {
         goal_average = 200 * 2;
         pose.gesture_type = GES_SLOW_WALK;
-        pose.step_height = 0.01;
+        pose.step_height = 0.025;
         pose.v_des[0] = 0.2;
         pose.v_des[1] = 0.001f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.006f * (float) (goal_average - curr_average);
