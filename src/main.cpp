@@ -4,6 +4,9 @@
 
 #include <thread>
 #include <chrono>
+#include <unistd.h>
+#include <csignal>
+#include <sstream>
 
 #include "dog.h"
 #include "stage.hpp"
@@ -13,8 +16,8 @@
 
 #include <opencv4/opencv2/opencv.hpp>
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 400
+#define HEIGHT 300
 
 using namespace cv;
 using namespace std;
@@ -534,8 +537,66 @@ void ProcessFrame() {
 
 }
 
+pid_t get_pid_from_file(const std::string &filename = "process.pid") {
+    std::ifstream pid_file(filename);
+    pid_t pid = -1;
+    if (pid_file.is_open()) {
+        pid_file >> pid;
+        pid_file.close();
+    }
+    return pid;
+}
+
+bool is_process_running(pid_t pid) {
+    return (kill(pid, SIGTERM) == 0);
+}
+
+void write_pid_to_file(pid_t pid, const std::string &filename = "process.pid") {
+    std::ofstream pid_file(filename);
+    if (pid_file.is_open()) {
+        pid_file << pid;
+        pid_file.close();
+    }
+}
+
+void kill_process(pid_t pid) {
+    if (is_process_running(pid)) {
+        kill(pid, SIGTERM); // 发送终止信号
+        sleep(1); // 等待一秒以确保进程可以被杀死
+    }
+}
+
+void signal_handler(int signal) {
+    if (signal == SIGTERM) {
+        std::cout << "Received SIGTERM signal" << std::endl;
+        timer.requestInterruption();
+    }
+}
+
+void init() {
+    // 设置信号处理程序
+    signal(SIGTERM, signal_handler);
+
+    pid_t current_pid = getpid(); // 获取当前进程 ID
+
+    // 在启动前检查是否已有进程
+    pid_t existing_pid = get_pid_from_file();
+    if (existing_pid > 0) {
+        if (is_process_running(existing_pid)) {
+            cout << "Killing existing process with PID: " << existing_pid << endl;
+            kill_process(existing_pid);
+        }
+    }
+
+    // 写入当前进程 ID 到文件
+    write_pid_to_file(current_pid);
+
+    cout << "Current process PID: " << current_pid << endl;
+}
 
 int main(int argc, char *argv[]) {
+    init();
+
     // 显示图像 default: false
     bool showImage = true;
 
@@ -619,7 +680,7 @@ int main(int argc, char *argv[]) {
         cap >> raw_frame; // read raw_frame
         if (raw_frame.empty()) continue; // skip empty raw_frame
 
-        resize(raw_frame, raw_frame, Size(400 * 2, 300 * 2), 0, 0, INTER_LINEAR);
+        resize(raw_frame, raw_frame, Size(WIDTH, HEIGHT), 0, 0, INTER_LINEAR);
         GaussianBlur(raw_frame, raw_frame, Size(9, 9), 0, 0);
 
         ProcessFrame();
