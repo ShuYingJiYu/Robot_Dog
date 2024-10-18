@@ -14,7 +14,7 @@
 #include "util/udp.hpp"
 #include "util/lcm.hpp"
 
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 
 #define WIDTH 400
 #define HEIGHT 300

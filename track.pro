@@ -15,29 +15,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
+# 源文件
 SOURCES += src/main.cpp
-HEADERS += include/dog.h include/stage.hpp include/util/color.hpp include/util/lcm.hpp include/util/udp.hpp
 
-#导入lcm 的库
-INCLUDEPATH += ./include
-INCLUDEPATH += ./LCM
-INCLUDEPATH += /usr/local/include
-LIBS += -L/usr/local/lib/ -llcm
-#导入opencv 的库
-INCLUDEPATH += /usr/local/include/opencv4/
-INCLUDEPATH += /usr/local/lib/
-LIBS += /usr/local/lib/libopencv_videoio.so \
-    -lopencv_calib \
+# 头文件
+HEADERS += \
+    include/dog.h \
+    include/stage.hpp \
+    include/util/color.hpp \
+    include/util/lcm.hpp \
+    include/util/udp.hpp
+
+# 导入 LCM 的库
+INCLUDEPATH += \
+    ./include \
+    /usr/local/include/opencv4
+
+LIBS += -llcm \
     -lopencv_core \
-    -lopencv_features2d \
-    -lopencv_flann \
     -lopencv_highgui \
     -lopencv_imgproc \
-    -lopencv_ml \
-    -lopencv_objdetect \
-    -lopencv_photo \
-    -lopencv_stitching \
-    -lopencv_wechat_qrcode
-    -lopencv_video
-LIBS +=/usr/local/lib/libopencv_core.so
-LIBS +=/usr/local/lib/libopencv_imgcodecs.so
+    -lopencv_videoio \
+    -lopencv_imgcodecs
