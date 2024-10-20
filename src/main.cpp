@@ -207,50 +207,20 @@ void ProcessFrame() {
             timer.task = TASK_RESIDENT_RIGHT;
             timer.next_color = yellow;
             timer.stage = 1;
-        }else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
-            cout << "recognized yellow" << endl;
+        }else if (timer.next_color == orange && checkColorBarExist(raw_frame, orange)) {
+            cout << "recognized orange" << endl;
             timer.task = TASK_END;
             timer.next_color = blue;
             timer.stage = 1;
             timer.laps++;
         }
+        else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
+            cout << "recognized yellow" << endl;
+            timer.task = TASK_UPSTAIR;
+            timer.next_color = orange;
+            timer.stage = 1;
+        }
 
-//        if (timer.next_color == blue && checkColorBarExist(raw_frame, blue)) {
-//            cout << "recognized blue" << endl;
-//            timer.task = TASK_LIMIT;
-//            if (timer.laps == 1)
-//                timer.next_color = violet;
-//            else if (timer.laps == 2)
-//                timer.next_color = green;
-//            timer.stage = 1;
-//        } else if (timer.next_color == violet && checkColorBarExist(raw_frame, violet)) {
-//            cout << "recognized violet" << endl;
-//            timer.task = TASK_RESIDENT;
-//            timer.next_color = green;
-//            timer.stage = 1;
-//        } else if (timer.next_color == green && checkColorBarExist(raw_frame, green)) {
-//            cout << "recognized green" << endl;
-//            if (timer.laps == 2)
-//                timer.task = TASK_CROSS;
-//            else
-//                timer.task = TASK_CROSS1;
-//            if (timer.laps == 1)}
-//                timer.next_color = yellow;
-//            else
-//                timer.next_color = brown;
-//            timer.stage = 1;
-//        } else if (timer.next_color == brown && checkColorBarExist(raw_frame, brown)) {
-//            cout << "recognized brown" << endl;
-//            timer.task = TASK_RESIDENT;
-//            timer.next_color = yellow;
-//            timer.stage = 1;
-//        } else if (timer.next_color == yellow && checkColorBarExist(raw_frame, yellow)) {
-//            cout << "recognized yellow" << endl;
-//            timer.task = TASK_UPSTAIR;
-//            timer.next_color = blue;
-//            timer.laps++;
-//            timer.stage = 1;
-//        }
     }
 
     // 动作变换
@@ -271,7 +241,7 @@ void ProcessFrame() {
         pose.stand_height = 0.3;
         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-        if ((timer.next_color == green or timer.next_color == red or timer.next_color == blue or timer.next_color == yellow) and timer.stage == 0)
+        if ((timer.next_color == green or timer.next_color == red or timer.next_color == orange or timer.next_color == blue or timer.next_color == yellow) and timer.stage == 0)
             pose.v_des[0] = 0.45f - 0.5f * fabs(pose.v_des[2]);
         else
             pose.v_des[0] = 0.45;
@@ -391,10 +361,19 @@ void ProcessFrame() {
                 pose.stand_height = 0.3;
                 pose.v_des[0] = 0.0;
                 pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-                break;
-            case 4: // continue
-                pose.control_mode = MODE_WALK;
-                break;
+                break;     
+             case 4: // squat
+                 pose.control_mode = MODE_SQUAT;
+                 break;
+             case 5: // ring
+                 pose.control_mode = 15;
+                 break;
+             case 6: // stable
+                 pose.control_mode = MODE_STABLE;
+                 break;
+             case 7: // continue
+                 pose.control_mode = MODE_WALK;
+                 break;
         }
     } else if (timer.task == TASK_RESIDENT_RIGHT) {
         switch (timer.stage) {
@@ -421,135 +400,40 @@ void ProcessFrame() {
                 pose.v_des[0] = 0.0;
                 pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
                 break;
-            case 4: // continue
+            case 4: // squat
+                pose.control_mode = MODE_SQUAT;
+                break;
+            case 5: // ring
+                pose.control_mode = 15;
+                break;
+            case 6: // stable
+                pose.control_mode = MODE_STABLE;
+                break;
+            case 7: // continue
                 pose.control_mode = MODE_WALK;
                 break;
         }
+    }else if (timer.task == TASK_UPSTAIR) {
+        if (timer.stage == 1) {
+            goal_average = 185;
+            pose.gesture_type = GES_FAST_WALK;
+            pose.step_height = 0.18;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.45;
+            pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
+            pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        } else if (timer.stage == 2) {
+            goal_average = 195;
+            pose.gesture_type = GES_SLOW_WALK;
+            pose.step_height = 0.09;
+            pose.stand_height = 0.3;
+            pose.v_des[0] = 0.45;
+            pose.v_des[2] = 0.0005f * (float) (goal_average - curr_average);
+            // stupid 2
+            pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
+        }
     }
-    // else if (timer.task == TASK_RESIDENT) {
-    //     switch (timer.stage) {
-    //         case 1: // prepare
-    //             pose.step_height = 0.03;
-    //             pose.stand_height = 0.3;
-    //             pose.v_des[0] = 0.07;
-    //             pose.v_des[1] = 0.0001f * (float) (curr_average - goal_average);
-    //             pose.v_des[2] = 0.001f * (float) (goal_average - curr_average);
-    //             // magic number
-    //             break;
-    //         case 2: // dump
-    //             pose.gesture_type = GES_STAND;
-    //             pose.control_mode = MODE_SQUAT;
-    //             pose.stand_height = 0.3;
-    //             pose.v_des[0] = 0.0;
-    //             pose.rpy_des[0] = 0.8;
-    //             break;
-    //         case 3: // stable
-    //             pose.gesture_type = GES_STAND;
-    //             pose.control_mode = MODE_STABLE;
-    //             pose.step_height = 0.00;
-    //             pose.stand_height = 0.3;
-    //             pose.v_des[0] = 0.0;
-    //             pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //             break;
-    //         case 4: // squat
-    //             pose.control_mode = MODE_SQUAT;
-    //             break;
-    //         case 5: // ring
-    //             pose.control_mode = 15;
-    //             break;
-    //         case 6: // stable
-    //             pose.control_mode = MODE_STABLE;
-    //             break;
-    //         case 7: // continue
-    //             pose.control_mode = MODE_WALK;
-    //             break;
-    //     }
-    // } else if (timer.task == TASK_CROSS) {
-    //     if (timer.stage == 1) {
-    //         // 进入
-    //         goal_average = 185;
-    //         pose.gesture_type = GES_FAST_WALK;
-    //         pose.step_height = 0.18;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.45;
-    //         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
-    //         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //     } else if (timer.stage == 2) {
-    //         pose.gesture_type = GES_MEDIUM_WALK;
-    //         pose.step_height = 0.03;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.3;
-    //         goal_average = 200;
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //         // right
-    //         pose.v_des[2] = -0.25;
-    //         cout << "right right right\n";
-    //     } else if (timer.stage == 3) {
-    //         goal_average = 185;
-    //         pose.gesture_type = GES_MEDIUM_WALK;
-    //         pose.step_height = 0.04;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.3;
-    //         goal_average = 180;
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //         // right
-    //         pose.v_des[2] = 0.022f * (float) (goal_average - curr_average);
-    //     }
-
-    // } else if (timer.task == TASK_UPSTAIR) {
-    //     if (timer.stage == 1) {
-    //         goal_average = 185;
-    //         pose.gesture_type = GES_FAST_WALK;
-    //         pose.step_height = 0.18;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.45;
-    //         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
-    //         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //     } else if (timer.stage == 2) {
-    //         goal_average = 195;
-    //         pose.gesture_type = GES_SLOW_WALK;
-    //         pose.step_height = 0.09;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.45;
-    //         pose.v_des[2] = 0.0005f * (float) (goal_average - curr_average);
-    //         // stupid 2
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //     }
-    // } else if (timer.task == TASK_CROSS1) {
-    //     if (timer.stage == 1) {
-    //         // 进入
-    //         goal_average = 200;
-    //         pose.gesture_type = GES_FAST_WALK;
-    //         pose.step_height = 0.18;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.45;
-    //         pose.v_des[1] = 0.00017f * (float) (curr_average - goal_average);
-    //         pose.v_des[2] = 0.012f * (float) (goal_average - curr_average);
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //     } else if (timer.stage == 2) {
-    //         pose.gesture_type = GES_MEDIUM_WALK;
-    //         pose.step_height = 0.03;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.3;
-    //         goal_average = 205;
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //         // left
-    //         pose.v_des[2] = 0.20;
-    //         cout << "left left left\n";
-    //     } else if (timer.stage == 3) {
-    //         goal_average = 200;
-    //         pose.gesture_type = GES_MEDIUM_WALK;
-    //         pose.step_height = 0.04;
-    //         pose.stand_height = 0.3;
-    //         pose.v_des[0] = 0.3;
-    //         goal_average = 180;
-    //         pose.rpy_des[0] = pose.rpy_des[1] = pose.rpy_des[2] = 0;
-    //         pose.v_des[2] = 0.013f * (float) (goal_average - curr_average);
-    //     }
-    // }
-
 
 }
 
