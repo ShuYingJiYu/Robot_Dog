@@ -37,6 +37,7 @@ enum TaskType {
     TASK_CROSS_RIGHT,
     TASK_RESIDENT_LEFT,
     TASK_RESIDENT_RIGHT,
+    TASK_END
 };
 
 
